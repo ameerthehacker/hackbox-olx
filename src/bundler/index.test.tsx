@@ -16,7 +16,7 @@ describe('Babel plugin', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `welcome();`;
+    const expectedTransformedCode = `_WELCOME().___default();`;
 
     const transformedCode = transform(code, {
       presets: ['es2017'],

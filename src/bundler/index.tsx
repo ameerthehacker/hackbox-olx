@@ -9,7 +9,21 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
     visitor: {
       /* eslint-disable @typescript-eslint/no-explicit-any */
       ImportDeclaration(path: any): void {
-        fileMetaData.deps.push(getFileMetaData(path.node.source.value));
+        const depMetaData = getFileMetaData(path.node.source.value);
+        fileMetaData.deps.push(depMetaData);
+
+        // check if there are any default imports
+        const defaultImport = path.node.specifiers.find(
+          (specifier: { type: string }) =>
+            specifier.type === 'ImportDefaultSpecifier'
+        );
+
+        if (defaultImport) {
+          path.scope.rename(
+            defaultImport.local.name,
+            `${depMetaData.canocialName}().___default`
+          );
+        }
 
         path.remove();
       },
