@@ -1003,6 +1003,11 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@babel/standalone@^7.8.3":
+  version "7.8.3"
+  resolved "https://registry.yarnpkg.com/@babel/standalone/-/standalone-7.8.3.tgz#0674730a8c5fbb9352de5342bf0c0c040d658380"
+  integrity sha512-WRYZUuGBYpmfUL50f2h3Cvw7s1F4wTVT5iIeT01tHo+LyB9QwrTJ6GF5J6YrtJHQqxMxt8zEl1d7I0Uhyz9NyQ==
+
 "@babel/template@^7.4.0", "@babel/template@^7.7.4", "@babel/template@^7.8.3":
   version "7.8.3"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.8.3.tgz#e02ad04fe262a657809327f578056ca15fd4d1b8"
@@ -1441,6 +1446,13 @@
   integrity sha512-bBKm+2VPJcMRVwNhxKu8W+5/zT7pwNEqeokFOmbvVSqGzFneNxYcEBro9Ac7/N9tlsaPYnZLK8J1LWKkMsLAew==
   dependencies:
     "@babel/types" "^7.0.0"
+
+"@types/babel__standalone@^7.1.0":
+  version "7.1.0"
+  resolved "https://registry.yarnpkg.com/@types/babel__standalone/-/babel__standalone-7.1.0.tgz#02a8f4369868ce59bac68d61789758daa250f657"
+  integrity sha512-jK+2mDDlAuqFxXfZUqWpC6dCbeSOslfxaH8v1OfM/94rYGfv1LtUKKOF9pFWBGiv/d2lc75gd0irR0uF0G6PBg==
+  dependencies:
+    "@babel/core" "^7.1.0"
 
 "@types/babel__template@*":
   version "7.0.2"

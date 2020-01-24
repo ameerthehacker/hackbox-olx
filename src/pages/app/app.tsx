@@ -1,8 +1,7 @@
 import React from 'react';
 import { bundle } from '../../bundler';
-import { DEV_FILES } from './dev-files';
 
-bundle(DEV_FILES);
+bundle();
 
 const App: React.FC = () => {
   return (

@@ -1,7 +1,8 @@
 const mainJs = `
-import {hello} from './hello.js';
+import hello from './hello.js';
 
-hello();
+// hello();
+console.log('hi');
 `;
 
 const helloJs = `
