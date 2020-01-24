@@ -18,6 +18,15 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
             specifier.type === 'ImportDefaultSpecifier'
         );
 
+        /*
+        import hello from './hello.js';
+
+        hello();
+        ==============================
+        above code is transformed into
+        ==============================
+        _HELLO().___default();
+        */
         if (defaultImport) {
           path.scope.rename(
             defaultImport.local.name,
@@ -29,13 +38,46 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
       },
       ExportDefaultDeclaration(path: any): void {
         fileMetaData.exports.___default = path.node.declaration.name;
+        /*
+        function hello() {
+          console.log('hello world');
+        }
 
+        export default hello;
+        ==============================
+        above code is transformed into
+        ==============================
+        function hello() {
+          console.log('hello world');
+        }
+        */
         path.remove();
       }
     }
   });
 }
 
+/*
+import hello from './hello.js';
+
+hello();
+
+function myHello() { console.log('my hello func') }
+
+export default myHello;
+==============================
+above code is transformed into
+==============================
+function module(_HELLO) {
+  _HELLO().___default();
+
+  function myHello() { console.log('my hello func') }
+
+  return {
+    ___default: myHello
+  }
+}
+*/
 export async function buildExecutableModule(
   fileMetaData: FileMetaData,
   fs: FS
@@ -46,17 +88,51 @@ export async function buildExecutableModule(
     presets: ['es2017'],
     plugins: [babelPlugin(fileMetaData)]
   }) as any).code;
+
+  /*
+  _HELLO().___default();
+
+  function hello() { console.log('hello world'); }
+
+  export default hello;
+  ==============================
+  above code is transformed into
+  ==============================
+  _HELLO().___default();
+
+  function hello() { console.log('hello world'); }
+  
+  return {
+    ___default: hello
+  }
+  */
   const exports = [];
 
-  // { __default: "hello" } => [ '__default:hello' ]
   for (const exportKey in fileMetaData.exports) {
     exports.push(`${exportKey}: ${fileMetaData.exports.___default}`);
   }
-  // [ '__default:hello' ] => '{ __default: hello }'
   const returnValue = `{${exports.join(',')}}`;
-  // we have changed the exports into an object that is returned
   transformedCode += `;return ${returnValue};`;
-  // wrap the transformed code into function
+
+  /*
+  function hello() { console.log('hello world'); }
+  
+  return {
+    ___default: hello
+  }
+  ==============================
+  above code is transformed into
+  ==============================
+  function(_HELLO) {
+    _HELLO().___default();
+    
+    function hello() { console.log('hello world'); }
+  
+    return {
+      ___default: hello
+    }
+  }
+  */
   const module = new Function('', transformedCode);
 
   return module;
