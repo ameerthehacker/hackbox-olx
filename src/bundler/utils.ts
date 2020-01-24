@@ -49,6 +49,8 @@ export function getFileMetaData(filePath: string): FileMetaData {
   return {
     canocialName,
     fileName,
-    ext
+    ext,
+    path: filePath,
+    deps: []
   };
 }

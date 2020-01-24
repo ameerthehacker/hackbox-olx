@@ -57,7 +57,9 @@ describe('utils', () => {
       expect(fileMetaData).toEqual({
         ext: 'js',
         canocialName: '_MODULES_SUB-MODULES_INDEX',
-        fileName: 'index.js'
+        fileName: 'index.js',
+        path: filePath,
+        deps: []
       });
     });
   });

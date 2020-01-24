@@ -1,5 +1,6 @@
 import { getFileMetaData } from './utils';
 import { FileMetaData } from './file-meta-data';
+import { FS } from './services/fs';
 
 export function babelPlugin(deps: FileMetaData[]): () => object {
   return (): object => ({
@@ -12,6 +13,16 @@ export function babelPlugin(deps: FileMetaData[]): () => object {
       }
     }
   });
+}
+
+export async function buildExecutableModule(
+  fileMetaData: FileMetaData,
+  fs: FS
+) {
+  const fileContent = await fs.readFile(fileMetaData.path);
+  const module = new Function('', fileContent);
+
+  return module;
 }
 
 // soon to be implemented

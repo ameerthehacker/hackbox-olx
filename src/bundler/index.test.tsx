@@ -1,7 +1,8 @@
 import { transform } from '@babel/standalone';
-import { babelPlugin } from './index';
+import { babelPlugin, buildExecutableModule } from './index';
 import { FileMetaData } from './file-meta-data';
 import { getFileMetaData } from './utils';
+import { FS } from './services/fs';
 
 describe('Babel plugin', () => {
   it('should remove the imports', () => {
@@ -35,5 +36,23 @@ describe('Babel plugin', () => {
       getFileMetaData('./modules/dep1'),
       getFileMetaData('./modules/dep2')
     ]);
+  });
+});
+
+describe('buildExecutableModule()', () => {
+  it('should create the function with required dependencies', async () => {
+    const files = {
+      './hello.js': `console.log('hello from hackbox')`
+    };
+    const fs = new FS(files);
+    const module = await buildExecutableModule(
+      getFileMetaData('./hello.js'),
+      fs
+    );
+
+    console.log = jest.fn();
+    module();
+
+    expect(console.log).toHaveBeenCalledWith('hello from hackbox');
   });
 });
