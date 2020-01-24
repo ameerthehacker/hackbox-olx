@@ -2,6 +2,9 @@ import { getFileMetaData } from './utils';
 import { FileMetaData } from './file-meta-data';
 import { FS } from './services/fs';
 import { transform } from '@babel/standalone';
+import { CodeCache } from './services/code-cache';
+
+const cache = CodeCache.getInstance();
 
 export function babelPlugin(fileMetaData: FileMetaData): () => object {
   return (): object => ({
@@ -77,7 +80,7 @@ function module(_HELLO) {
   }
 }
 */
-export async function buildExecutableModule(
+export async function buildExecutableModules(
   fileMetaData: FileMetaData,
   fs: FS
 ) {
@@ -132,8 +135,19 @@ export async function buildExecutableModule(
     }
   }
   */
-  const deps = fileMetaData.deps.map((dep) => dep.canocialName);
-  const module = new Function(...deps, transformedCode);
+  // build the executable modules of all the dependencies first
+  for (const dep of fileMetaData.deps) {
+    // check if the module is already built or not
+    if (!cache.get(dep.canocialName)) {
+      // transform all the dependencies and cache them
+      await buildExecutableModules(dep, fs);
+    }
+  }
+
+  const depArgs = fileMetaData.deps.map((dep) => dep.canocialName);
+  const module = new Function(...depArgs, transformedCode);
+  // add module to the code cache
+  cache.set(fileMetaData.canocialName, module);
 
   return module;
 }

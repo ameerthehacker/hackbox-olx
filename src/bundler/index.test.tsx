@@ -1,14 +1,19 @@
 import { transform } from '@babel/standalone';
-import { babelPlugin, buildExecutableModule } from './index';
+import { babelPlugin, buildExecutableModules } from './index';
 import { FileMetaData } from './file-meta-data';
 import { getFileMetaData } from './utils';
 import { FS } from './services/fs';
+import { CodeCache } from './services/code-cache';
 
 let someFileMetaData: FileMetaData;
 
 describe('Babel plugin', () => {
   beforeEach(() => {
     someFileMetaData = getFileMetaData('./hello.js');
+  });
+
+  afterEach(() => {
+    jest.resetAllMocks();
   });
 
   it('should remove the imports', () => {
@@ -75,7 +80,7 @@ describe('buildExecutableModule()', () => {
       './hello.js': `console.log('hello from hackbox');`
     };
     const fs = new FS(files);
-    const module = await buildExecutableModule(
+    const module = await buildExecutableModules(
       getFileMetaData('./hello.js'),
       fs
     );
@@ -92,7 +97,7 @@ describe('buildExecutableModule()', () => {
       export default hello;`
     };
     const fs = new FS(files);
-    const module = await buildExecutableModule(
+    const module = await buildExecutableModules(
       getFileMetaData('./hello.js'),
       fs
     );
@@ -107,21 +112,26 @@ describe('buildExecutableModule()', () => {
 
   it('should run with a dependency injected', async () => {
     const files = {
+      './welcome.js': `function welcome() { console.log('hello from dep injection') }
+      export default welcome;`,
       './hello.js': `import welcome from './welcome.js';
       welcome();`
     };
+    const cache = CodeCache.getInstance();
     const fs = new FS(files);
-    const module = await buildExecutableModule(
+    const entryModule = await buildExecutableModules(
       getFileMetaData('./hello.js'),
       fs
     );
 
-    const _WELCOME = () => ({
-      ___default: () => console.log('hello from dep injection')
-    });
     console.log = jest.fn();
     // try running the module with the _WELCOME dependency
-    module(_WELCOME);
+    const entryFunc = new Function(
+      'entryModule',
+      `entryModule(${cache.get('_WELCOME')})`
+    );
+
+    entryFunc(entryModule);
 
     expect(console.log).toHaveBeenCalledWith('hello from dep injection');
   });
