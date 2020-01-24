@@ -51,6 +51,7 @@ export function getFileMetaData(filePath: string): FileMetaData {
     fileName,
     ext,
     path: filePath,
-    deps: []
+    deps: [],
+    exports: {}
   };
 }

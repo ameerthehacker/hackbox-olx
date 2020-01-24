@@ -59,7 +59,8 @@ describe('utils', () => {
         canocialName: '_MODULES_SUB-MODULES_INDEX',
         fileName: 'index.js',
         path: filePath,
-        deps: []
+        deps: [],
+        exports: {}
       });
     });
   });
