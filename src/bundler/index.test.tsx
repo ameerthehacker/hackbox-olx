@@ -72,7 +72,7 @@ describe('Babel plugin', () => {
 describe('buildExecutableModule()', () => {
   it('should create the function with required dependencies', async () => {
     const files = {
-      './hello.js': `console.log('hello from hackbox')`
+      './hello.js': `console.log('hello from hackbox');`
     };
     const fs = new FS(files);
     const module = await buildExecutableModule(
@@ -84,5 +84,24 @@ describe('buildExecutableModule()', () => {
     module();
 
     expect(console.log).toHaveBeenCalledWith('hello from hackbox');
+  });
+
+  it('should return the default export', async () => {
+    const files = {
+      './hello.js': `function hello() { console.log('hello from export'); }
+      export default hello;`
+    };
+    const fs = new FS(files);
+    const module = await buildExecutableModule(
+      getFileMetaData('./hello.js'),
+      fs
+    );
+
+    console.log = jest.fn();
+    const exports = module();
+    // try running the default export
+    exports.___default();
+
+    expect(console.log).toHaveBeenCalledWith('hello from export');
   });
 });
