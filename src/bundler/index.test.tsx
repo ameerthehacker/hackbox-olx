@@ -104,4 +104,25 @@ describe('buildExecutableModule()', () => {
 
     expect(console.log).toHaveBeenCalledWith('hello from export');
   });
+
+  it('should run with a dependency injected', async () => {
+    const files = {
+      './hello.js': `import welcome from './welcome.js';
+      welcome();`
+    };
+    const fs = new FS(files);
+    const module = await buildExecutableModule(
+      getFileMetaData('./hello.js'),
+      fs
+    );
+
+    const _WELCOME = () => ({
+      ___default: () => console.log('hello from dep injection')
+    });
+    console.log = jest.fn();
+    // try running the module with the _WELCOME dependency
+    module(_WELCOME);
+
+    expect(console.log).toHaveBeenCalledWith('hello from dep injection');
+  });
 });

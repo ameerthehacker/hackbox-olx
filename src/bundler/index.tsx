@@ -1,7 +1,6 @@
 import { getFileMetaData } from './utils';
 import { FileMetaData } from './file-meta-data';
 import { FS } from './services/fs';
-import { ExportsMetaData } from './exports-meta-data';
 import { transform } from '@babel/standalone';
 
 export function babelPlugin(fileMetaData: FileMetaData): () => object {
@@ -125,7 +124,7 @@ export async function buildExecutableModule(
   ==============================
   function(_HELLO) {
     _HELLO().___default();
-    
+
     function hello() { console.log('hello world'); }
   
     return {
@@ -133,7 +132,8 @@ export async function buildExecutableModule(
     }
   }
   */
-  const module = new Function('', transformedCode);
+  const deps = fileMetaData.deps.map((dep) => dep.canocialName);
+  const module = new Function(...deps, transformedCode);
 
   return module;
 }
