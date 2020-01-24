@@ -1,7 +1,9 @@
 import React from 'react';
-import { bundle } from '../../bundler';
+import { run } from '../../bundler';
+import { FS } from '../../bundler/services/fs';
+import { DEV_FILES } from './dev-files';
 
-bundle();
+run(new FS(DEV_FILES), './main.js');
 
 const App: React.FC = () => {
   return (

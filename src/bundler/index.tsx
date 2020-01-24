@@ -3,6 +3,8 @@ import { FileMetaData } from './file-meta-data';
 import { FS } from './services/fs';
 import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache';
+import { ModuleDef } from './module-def';
+import { ExportsMetaData } from './exports-meta-data';
 
 const cache = CodeCache.getInstance();
 
@@ -32,7 +34,7 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
         if (defaultImport) {
           path.scope.rename(
             defaultImport.local.name,
-            `${depMetaData.canocialName}().___default`
+            `${depMetaData.canocialName}.___default`
           );
         }
 
@@ -83,7 +85,7 @@ function module(_HELLO) {
 export async function buildExecutableModules(
   fileMetaData: FileMetaData,
   fs: FS
-) {
+): Promise<ModuleDef> {
   const fileContent = await fs.readFile(fileMetaData.path);
 
   let transformedCode = (transform(fileContent, {
@@ -145,16 +147,36 @@ export async function buildExecutableModules(
   }
 
   const depArgs = fileMetaData.deps.map((dep) => dep.canocialName);
-  const module = new Function(...depArgs, transformedCode);
+  const moduleDef: ModuleDef = {
+    module: new Function(...depArgs, transformedCode),
+    deps: depArgs
+  };
   // add module to the code cache
-  cache.set(fileMetaData.canocialName, module);
+  cache.set(fileMetaData.canocialName, moduleDef);
 
-  return module;
+  return moduleDef;
 }
 
-// soon to be implemented
-function bundle(): void {
-  console.log('will be bundling stuffs soon...');
+export function runModule(moduleDef: ModuleDef): ExportsMetaData {
+  const depRefs: ExportsMetaData[] = [];
+
+  for (const dep of moduleDef.deps) {
+    const depModuleDef = cache.get(dep);
+
+    if (depModuleDef) {
+      const depRef = runModule(depModuleDef);
+
+      depRefs.push(depRef);
+    }
+  }
+
+  return moduleDef.module(...depRefs);
 }
 
-export { bundle };
+export async function run(fs: FS, entryFile: string): Promise<void> {
+  const entryFileMetaData = getFileMetaData(entryFile);
+  // build all the executable modules
+  const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);
+  // now all the transformed files are in the cache
+  runModule(entryModuleDef);
+}

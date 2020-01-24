@@ -1,5 +1,5 @@
 import { transform } from '@babel/standalone';
-import { babelPlugin, buildExecutableModules } from './index';
+import { babelPlugin, buildExecutableModules, run } from './index';
 import { FileMetaData } from './file-meta-data';
 import { getFileMetaData } from './utils';
 import { FS } from './services/fs';
@@ -17,11 +17,10 @@ describe('Babel plugin', () => {
   });
 
   it('should remove the imports', () => {
-    const filePath = './hello.js';
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `_WELCOME().___default();`;
+    const expectedTransformedCode = `_WELCOME.___default();`;
 
     const transformedCode = transform(code, {
       presets: ['es2017'],
@@ -75,64 +74,86 @@ describe('Babel plugin', () => {
 });
 
 describe('buildExecutableModule()', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   it('should create the function with required dependencies', async () => {
     const files = {
-      './hello.js': `console.log('hello from hackbox');`
+      './hello.js': `console.info('hello from hackbox');`
     };
     const fs = new FS(files);
-    const module = await buildExecutableModules(
-      getFileMetaData('./hello.js'),
-      fs
-    );
+    const module = (
+      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+    ).module;
 
-    console.log = jest.fn();
+    console.info = jest.fn();
     module();
 
-    expect(console.log).toHaveBeenCalledWith('hello from hackbox');
+    expect(console.info).toHaveBeenCalledWith('hello from hackbox');
   });
 
   it('should return the default export', async () => {
     const files = {
-      './hello.js': `function hello() { console.log('hello from export'); }
+      './hello.js': `function hello() { console.info('hello from export'); }
       export default hello;`
     };
     const fs = new FS(files);
-    const module = await buildExecutableModules(
-      getFileMetaData('./hello.js'),
-      fs
-    );
+    const module = (
+      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+    ).module;
 
-    console.log = jest.fn();
+    console.info = jest.fn();
     const exports = module();
     // try running the default export
     exports.___default();
 
-    expect(console.log).toHaveBeenCalledWith('hello from export');
+    expect(console.info).toHaveBeenCalledWith('hello from export');
   });
 
-  it('should run with a dependency injected', async () => {
+  xit('should run with a dependency injected', async () => {
     const files = {
-      './welcome.js': `function welcome() { console.log('hello from dep injection') }
+      './welcome.js': `function welcome() { console.info('hello from dep injection') }
       export default welcome;`,
       './hello.js': `import welcome from './welcome.js';
       welcome();`
     };
     const cache = CodeCache.getInstance();
     const fs = new FS(files);
-    const entryModule = await buildExecutableModules(
-      getFileMetaData('./hello.js'),
-      fs
-    );
+    const entryModule = (
+      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+    ).module;
 
-    console.log = jest.fn();
+    console.info = jest.fn();
     // try running the module with the _WELCOME dependency
     const entryFunc = new Function(
       'entryModule',
-      `entryModule(${cache.get('_WELCOME')})`
+      `entryModule(${cache.get('_WELCOME')?.module}())`
     );
 
     entryFunc(entryModule);
 
-    expect(console.log).toHaveBeenCalledWith('hello from dep injection');
+    expect(console.info).toHaveBeenCalledWith('hello from dep injection');
+  });
+});
+
+describe('runModule', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
+  it('should run the modules', async () => {
+    const files = {
+      './welcome.js': `function welcome() { console.info('hello from modules') }
+      export default welcome;`,
+      './hello.js': `import welcome from './welcome.js';
+      welcome();`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './hello.js');
+
+    expect(console.info).toHaveBeenCalledWith('hello from modules');
   });
 });

@@ -1,11 +1,13 @@
+import { ModuleDef } from '../module-def';
+
 export class CodeCache {
   private static instance: CodeCache;
 
   private constructor(
-    private cache: { [key: string]: string | null | Function } = {}
+    private cache: { [key: string]: null | ModuleDef } = {}
   ) {}
 
-  public static getInstance() {
+  public static getInstance(): CodeCache {
     if (this.instance == null) {
       this.instance = new CodeCache();
     }
@@ -13,15 +15,15 @@ export class CodeCache {
     return this.instance;
   }
 
-  public set(key: string, value: string | Function) {
+  public set(key: string, value: ModuleDef): void {
     this.cache[key] = value;
   }
 
-  public unset(key: string) {
+  public unset(key: string): void {
     this.cache[key] = null;
   }
 
-  public get(key: string) {
+  public get(key: string): ModuleDef | null {
     return this.cache[key];
   }
 }
