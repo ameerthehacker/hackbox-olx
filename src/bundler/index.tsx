@@ -29,7 +29,7 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
         ==============================
         above code is transformed into
         ==============================
-        _HELLO().___default();
+        _HELLO.___default();
         */
         if (defaultImport) {
           path.scope.rename(
@@ -73,7 +73,7 @@ export default myHello;
 above code is transformed into
 ==============================
 function module(_HELLO) {
-  _HELLO().___default();
+  _HELLO.___default();
 
   function myHello() { console.log('my hello func') }
 
@@ -94,7 +94,7 @@ export async function buildExecutableModules(
   }) as any).code;
 
   /*
-  _HELLO().___default();
+  _HELLO.___default();
 
   function hello() { console.log('hello world'); }
 
@@ -102,7 +102,7 @@ export async function buildExecutableModules(
   ==============================
   above code is transformed into
   ==============================
-  _HELLO().___default();
+  _HELLO.___default();
 
   function hello() { console.log('hello world'); }
   
@@ -119,6 +119,8 @@ export async function buildExecutableModules(
   transformedCode += `;return ${returnValue};`;
 
   /*
+  _HELLO.___default();
+
   function hello() { console.log('hello world'); }
   
   return {
@@ -128,7 +130,7 @@ export async function buildExecutableModules(
   above code is transformed into
   ==============================
   function(_HELLO) {
-    _HELLO().___default();
+    _HELLO.___default();
 
     function hello() { console.log('hello world'); }
   
@@ -141,7 +143,7 @@ export async function buildExecutableModules(
   for (const dep of fileMetaData.deps) {
     // check if the module is already built or not
     if (!cache.get(dep.canocialName)) {
-      // transform all the dependencies and cache them
+      // transform that dependency and cache it
       await buildExecutableModules(dep, fs);
     }
   }
@@ -177,6 +179,6 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
   const entryFileMetaData = getFileMetaData(entryFile);
   // build all the executable modules
   const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);
-  // now all the transformed files are in the cache
+  // now all the transformed files are in the cache and we can run the entry module
   runModule(entryModuleDef);
 }

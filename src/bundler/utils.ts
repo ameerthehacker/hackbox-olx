@@ -21,6 +21,7 @@ export function getFileNameWithoutExt(fileName: string): string {
   return fileNameWithoutExt;
 }
 
+// TODO: take cwd path into account to find correct canocial name
 export function getCanocialName(filePath: string): string {
   const filePathArr = filePath.split('/');
   let canocialName = '';
