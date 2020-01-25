@@ -166,6 +166,11 @@ export async function buildExecutableModules(
     exports.push(`${exportKey}: ${fileMetaData.exports[exportKey]}`);
   }
   const returnValue = `{${exports.join(',')}}`;
+  /*
+    return {
+      ___default: hello
+    }
+  */
   transformedCode += `;return ${returnValue};`;
 
   /*
