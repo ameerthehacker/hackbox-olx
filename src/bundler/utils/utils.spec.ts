@@ -60,7 +60,9 @@ describe('utils', () => {
         fileName: 'index.js',
         path: filePath,
         deps: [],
-        exports: {}
+        exports: {
+          ___default: ''
+        }
       });
     });
   });

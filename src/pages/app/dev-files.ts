@@ -5,11 +5,11 @@ hello('hello world from hackbox');
 `;
 
 const helloJs = `
-import msg from './msg.js';
+import { msgRenamed as msgAgain } from './msg.js';
 
 function hello(message) {
   console.log(message);
-  msg(message);
+  msgAgain(message);
 }
 
 export default hello;
@@ -20,7 +20,7 @@ function msg(message) {
   alert(message);
 }
 
-export default msg;
+export { msg as msgRenamed };
 `;
 
 export const DEV_FILES = {

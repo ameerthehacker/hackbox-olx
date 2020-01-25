@@ -163,7 +163,11 @@ export async function buildExecutableModules(
   const exports = [];
 
   for (const exportKey in fileMetaData.exports) {
-    exports.push(`${exportKey}: ${fileMetaData.exports[exportKey]}`);
+    const exportedRef = fileMetaData.exports[exportKey];
+
+    if (exportedRef && exportedRef.trim().length > 0) {
+      exports.push(`${exportKey}: ${fileMetaData.exports[exportKey]}`);
+    }
   }
   const returnValue = `{${exports.join(',')}}`;
   /*

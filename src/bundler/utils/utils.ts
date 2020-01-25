@@ -53,6 +53,8 @@ export function getFileMetaData(filePath: string): FileMetaData {
     ext,
     path: filePath,
     deps: [],
-    exports: {}
+    exports: {
+      ___default: ''
+    }
   };
 }
