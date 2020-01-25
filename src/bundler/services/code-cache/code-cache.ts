@@ -27,7 +27,7 @@ export class CodeCache {
     return this.cache[key];
   }
 
-  public reset() {
+  public reset(): void {
     for (const key in this.cache) {
       this.cache[key] = null;
     }
