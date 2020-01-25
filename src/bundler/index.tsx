@@ -5,7 +5,6 @@ import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache';
 import { ModuleDef } from './module-def';
 import { ExportsMetaData } from './exports-meta-data';
-import { stringify } from 'querystring';
 
 const cache = CodeCache.getInstance();
 
