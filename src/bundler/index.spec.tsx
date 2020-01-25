@@ -10,9 +10,6 @@ let someFileMetaData: FileMetaData;
 describe('Babel plugin', () => {
   beforeEach(() => {
     someFileMetaData = getFileMetaData('./hello.js');
-  });
-
-  afterEach(() => {
     jest.resetAllMocks();
   });
 
@@ -111,7 +108,7 @@ describe('buildExecutableModule()', () => {
     expect(console.info).toHaveBeenCalledWith('hello from export');
   });
 
-  xit('should run with a dependency injected', async () => {
+  it('should run with a dependency injected', async () => {
     const files = {
       './welcome.js': `function welcome() { console.info('hello from dep injection') }
       export default welcome;`,
@@ -138,8 +135,10 @@ describe('buildExecutableModule()', () => {
 });
 
 describe('runModule', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.resetAllMocks();
+    // reset the cache
+    CodeCache.getInstance().reset();
   });
 
   it('should run the modules', async () => {

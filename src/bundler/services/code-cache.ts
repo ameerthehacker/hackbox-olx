@@ -26,4 +26,10 @@ export class CodeCache {
   public get(key: string): ModuleDef | null {
     return this.cache[key];
   }
+
+  public reset() {
+    for (const key in this.cache) {
+      this.cache[key] = null;
+    }
+  }
 }

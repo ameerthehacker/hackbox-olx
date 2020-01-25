@@ -30,4 +30,15 @@ describe('CodeCache', () => {
     cache.unset('some-key');
     expect(cache.get('some-key')).toBe(null);
   });
+
+  it('reset() should clear the cache', () => {
+    const cache = CodeCache.getInstance();
+
+    cache.set('some-key', { module: noop, deps: ['some-fuck-dep'] });
+    cache.set('some-other-key', { module: noop, deps: ['some-shit-dep'] });
+    cache.reset();
+
+    expect(cache.get('some-key')).toBe(null);
+    expect(cache.get('some-other-key')).toBe(null);
+  });
 });
