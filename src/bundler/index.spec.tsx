@@ -186,9 +186,9 @@ describe('runModule', () => {
     CodeCache.getInstance().reset();
   });
 
-  it('should run the modules', async () => {
+  it('should run the modules with default imports, exports', async () => {
     const files = {
-      './welcome.js': `function welcome() { console.info('hello from modules') }
+      './welcome.js': `function welcome() { console.info('hello from default import/export modules') }
       export default welcome;`,
       './hello.js': `import welcome from './welcome.js';
       welcome();`
@@ -198,6 +198,59 @@ describe('runModule', () => {
     console.info = jest.fn();
     await run(fs, './hello.js');
 
-    expect(console.info).toHaveBeenCalledWith('hello from modules');
+    expect(console.info).toHaveBeenCalledWith(
+      'hello from default import/export modules'
+    );
+  });
+
+  it('should run the modules with named imports, exports', async () => {
+    const files = {
+      './welcome.js': `function welcome() { console.info('hello from named import/export modules') }
+      export { welcome };`,
+      './hello.js': `import { welcome } from './welcome.js';
+      welcome();`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './hello.js');
+
+    expect(console.info).toHaveBeenCalledWith(
+      'hello from named import/export modules'
+    );
+  });
+
+  it('should run the modules with renamed imports', async () => {
+    const files = {
+      './welcome.js': `function welcome() { console.info('hello from renamed import modules') }
+      export { welcome };`,
+      './hello.js': `import { welcome as hello } from './welcome.js';
+      hello();`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './hello.js');
+
+    expect(console.info).toHaveBeenCalledWith(
+      'hello from renamed import modules'
+    );
+  });
+
+  it('should run the modules with renamed exports', async () => {
+    const files = {
+      './welcome.js': `function welcome() { console.info('hello from renamed exports modules') }
+      export { welcome as something };`,
+      './hello.js': `import { something as hello } from './welcome.js';
+      hello();`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './hello.js');
+
+    expect(console.info).toHaveBeenCalledWith(
+      'hello from renamed exports modules'
+    );
   });
 });
