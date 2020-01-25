@@ -1,6 +1,6 @@
 import React from 'react';
 import { run } from '../../bundler';
-import { FS } from '../../bundler/services/fs';
+import { FS } from '../../bundler/services/fs/fs';
 import { DEV_FILES } from './dev-files';
 
 run(new FS(DEV_FILES), './main.js');

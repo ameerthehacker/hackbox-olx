@@ -1,4 +1,4 @@
-import { ModuleDef } from '../module-def';
+import { ModuleDef } from '../../contracts/module-def';
 
 export class CodeCache {
   private static instance: CodeCache;

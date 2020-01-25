@@ -1,10 +1,10 @@
-import { getFileMetaData } from './utils';
-import { FileMetaData } from './file-meta-data';
-import { FS } from './services/fs';
+import { getFileMetaData } from './utils/utils';
+import { FileMetaData } from './contracts/file-meta-data';
+import { FS } from './services/fs/fs';
 import { transform } from '@babel/standalone';
-import { CodeCache } from './services/code-cache';
-import { ModuleDef } from './module-def';
-import { ExportsMetaData } from './exports-meta-data';
+import { CodeCache } from './services/code-cache/code-cache';
+import { ModuleDef } from './contracts/module-def';
+import { ExportsMetaData } from './contracts/exports-meta-data';
 
 const cache = CodeCache.getInstance();
 
