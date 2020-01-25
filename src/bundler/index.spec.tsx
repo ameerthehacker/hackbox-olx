@@ -6,6 +6,8 @@ import { FS } from './services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 
 let someFileMetaData: FileMetaData;
+// This is added by babel at the top when we transpile to es5
+const useStrict = '"use strict";\n\n';
 
 describe('Babel plugin', () => {
   beforeEach(() => {
@@ -17,10 +19,10 @@ describe('Babel plugin', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `_WELCOME.___default();`;
+    const expectedTransformedCode = `${useStrict}_WELCOME.___default();`;
 
     const transformedCode = transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -31,10 +33,10 @@ describe('Babel plugin', () => {
     const code = `import { welcome } from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `_WELCOME.welcome();`;
+    const expectedTransformedCode = `${useStrict}_WELCOME.welcome();`;
 
     const transformedCode = transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -45,10 +47,10 @@ describe('Babel plugin', () => {
     const code = `import { welcome as something } from './welcome';
     something();
     `;
-    const expectedTransformedCode = `_WELCOME.welcome();`;
+    const expectedTransformedCode = `${useStrict}_WELCOME.welcome();`;
 
     const transformedCode = transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -63,7 +65,7 @@ describe('Babel plugin', () => {
       `;
 
     transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     });
 
@@ -79,7 +81,7 @@ describe('Babel plugin', () => {
     export default counter;`;
 
     transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     });
 
@@ -93,25 +95,27 @@ describe('Babel plugin', () => {
   it('should remove default exports', () => {
     const code = `const counter = 10;
     export default counter;`;
+    const expectedTransformedCode = `${useStrict}var counter = 10;`;
 
     const transformedCode = transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
-    expect(transformedCode).toBe(`const counter = 10;`);
+    expect(transformedCode).toBe(expectedTransformedCode);
   });
 
   it('should remove named exports', () => {
     const code = `const counter = 10;
     export { counter };`;
+    const expectedTransformedCode = `${useStrict}var counter = 10;`;
 
     const transformedCode = transform(code, {
-      presets: ['es2017'],
+      presets: ['es2015'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
-    expect(transformedCode).toBe(`const counter = 10;`);
+    expect(transformedCode).toBe(expectedTransformedCode);
   });
 });
 

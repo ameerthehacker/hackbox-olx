@@ -139,7 +139,7 @@ export async function buildExecutableModules(
   const fileContent = await fs.readFile(fileMetaData.path);
 
   let transformedCode = (transform(fileContent, {
-    presets: ['es2017'],
+    presets: ['es2015'],
     plugins: [babelPlugin(fileMetaData)]
   }) as any).code;
 
