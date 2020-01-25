@@ -13,11 +13,39 @@ describe('Babel plugin', () => {
     jest.resetAllMocks();
   });
 
-  it('should remove the imports', () => {
+  it('should update the default imports', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
     const expectedTransformedCode = `_WELCOME.___default();`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2017'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(expectedTransformedCode);
+  });
+
+  it('should update the named imports', () => {
+    const code = `import { welcome } from './welcome';
+    welcome();
+    `;
+    const expectedTransformedCode = `_WELCOME.welcome();`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2017'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(expectedTransformedCode);
+  });
+
+  it('should update the named imports with renames', () => {
+    const code = `import { welcome as something } from './welcome';
+    something();
+    `;
+    const expectedTransformedCode = `_WELCOME.welcome();`;
 
     const transformedCode = transform(code, {
       presets: ['es2017'],

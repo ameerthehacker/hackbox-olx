@@ -5,6 +5,7 @@ import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache';
 import { ModuleDef } from './module-def';
 import { ExportsMetaData } from './exports-meta-data';
+import { stringify } from 'querystring';
 
 const cache = CodeCache.getInstance();
 
@@ -35,6 +36,26 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
           path.scope.rename(
             defaultImport.local.name,
             `${depMetaData.canocialName}.___default`
+          );
+        }
+        // check if there are any named imports and transform them
+        const namedImports = path.node.specifiers.filter(
+          (specifier: { type: string }) => specifier.type === 'ImportSpecifier'
+        );
+
+        /*
+        import { hello as something } from './hello.js';
+
+        something();
+        ==============================
+        above code is transformed into
+        ==============================
+        _HELLO.hello();
+        */
+        for (const namedImport of namedImports) {
+          path.scope.rename(
+            namedImport.local.name,
+            `${depMetaData.canocialName}.${namedImport.imported.name}`
           );
         }
 
