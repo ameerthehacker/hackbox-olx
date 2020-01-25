@@ -74,7 +74,8 @@ describe('Babel plugin', () => {
   });
 
   it('should return the exports as array', () => {
-    const code = `const counter = 10;
+    const code = `const counter = 10, value = 2, renamedValue = 3;
+    export { value, renamedValue as otherValue };
     export default counter;`;
 
     transform(code, {
@@ -82,12 +83,28 @@ describe('Babel plugin', () => {
       plugins: [babelPlugin(someFileMetaData)]
     });
 
-    expect(someFileMetaData.exports).toEqual({ ___default: 'counter' });
+    expect(someFileMetaData.exports).toEqual({
+      ___default: 'counter',
+      value: 'value',
+      otherValue: 'renamedValue'
+    });
   });
 
   it('should remove default exports', () => {
     const code = `const counter = 10;
     export default counter;`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2017'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(`const counter = 10;`);
+  });
+
+  it('should remove named exports', () => {
+    const code = `const counter = 10;
+    export { counter };`;
 
     const transformedCode = transform(code, {
       presets: ['es2017'],

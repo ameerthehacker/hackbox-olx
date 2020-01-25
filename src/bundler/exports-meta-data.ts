@@ -1,3 +1,4 @@
 export interface ExportsMetaData {
-  ___default?: string;
+  [name: string]: string;
+  ___default: string;
 }

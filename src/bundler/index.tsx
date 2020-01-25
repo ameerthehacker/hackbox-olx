@@ -53,6 +53,8 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
         _HELLO.hello();
         */
         for (const namedImport of namedImports) {
+          // namedImport.local.name => something
+          // nmaedImport.imported.name => hello
           path.scope.rename(
             namedImport.local.name,
             `${depMetaData.canocialName}.${namedImport.imported.name}`
@@ -76,6 +78,34 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
           console.log('hello world');
         }
         */
+        path.remove();
+      },
+      ExportNamedDeclaration(path: any): void {
+        // check if there are any named exports and transform them
+        const namedExports = path.node.specifiers.filter(
+          (specifier: { type: string }) => specifier.type === 'ExportSpecifier'
+        );
+
+        /*
+        function hello() {
+          console.log('hello world');
+        }
+
+        export { hello as something };
+        ==============================
+        above code is transformed into
+        ==============================
+        function hello() {
+          console.log('hello world');
+        }
+        */
+        for (const namedExport of namedExports) {
+          // namedExport.local.name => hello
+          // nmaedExport.exported.name => something
+          fileMetaData.exports[namedExport.exported.name] =
+            namedExport.local.name;
+        }
+
         path.remove();
       }
     }
