@@ -136,7 +136,17 @@ export async function buildExecutableModules(
   fileMetaData: FileMetaData,
   fs: FS
 ): Promise<ModuleDef> {
-  const fileContent = await fs.readFile(fileMetaData.path);
+  let fileContent = '';
+
+  try {
+    fileContent = await fs.readFile(fileMetaData.path);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(`module ${fileMetaData.path} does not exists`);
+    } else {
+      throw err;
+    }
+  }
 
   let transformedCode = (transform(fileContent, {
     presets: ['es2015'],

@@ -257,4 +257,18 @@ describe('runModule', () => {
       'hello from renamed exports modules'
     );
   });
+
+  it('should throw error when module is not found', async () => {
+    const files = {
+      './hello.js': `import { something as hello } from './welcome.js';
+      hello();`
+    };
+    const fs = new FS(files);
+
+    try {
+      await run(fs, './hello.js');
+    } catch (err) {
+      expect(err).toEqual(new Error(`module ./welcome.js does not exists`));
+    }
+  });
 });
