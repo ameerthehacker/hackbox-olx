@@ -51,7 +51,7 @@ export default function SideBar(): ReactElement {
         {sideBarSections.map(({ icon, elem }, index) => (
           <Box key={index}>
             <SideBarIcon
-              onClick={() => setActiveSideBarIndex(index)}
+              onClick={(): void => setActiveSideBarIndex(index)}
               icon={icon}
               isActive={activeSideBarIconIndex === index}
             />

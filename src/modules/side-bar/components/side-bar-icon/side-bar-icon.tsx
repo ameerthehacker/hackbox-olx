@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { IconType } from 'react-icons/lib/cjs';
 import { Box } from '@chakra-ui/core';
 import useFormat from '../../../../components/format/format';
@@ -15,7 +15,7 @@ export default function SideBarIcon({
   opacity = 0.8,
   isActive = false,
   onClick
-}: SideBarIconProps) {
+}: SideBarIconProps): ReactElement {
   const { color } = useFormat();
 
   return (
