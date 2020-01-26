@@ -28,7 +28,7 @@ export default function NavBar(): ReactElement {
       w="100%"
     >
       <Flex alignItems="center" justifyContent="space-between">
-        <Logo brandName="Hackbox" />
+        <Logo brandName="hackbox" />
         <Stack spacing={2} direction="row">
           <Link href="https://github.com/ameerthehacker/hackbox" isExternal>
             <GitHubLogo height="1.5em" opacity="0.65" fill={color} />
