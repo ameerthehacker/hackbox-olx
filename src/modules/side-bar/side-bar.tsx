@@ -19,6 +19,7 @@ export default function SideBar(): ReactElement {
   // TODO: remove after we have a proper fs
   const DEV_FILES = {
     './index.js': `console.log('hi')`,
+    './something': `he ha`,
     './components/hello.js': `console.log('hello')`
   };
   const fs = new FS(DEV_FILES);
