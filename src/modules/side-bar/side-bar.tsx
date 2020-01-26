@@ -1,32 +1,74 @@
-import React, { ReactElement, useState } from 'react';
-import { Box } from '@chakra-ui/core';
+import React, { ReactElement, useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+import { Box, Flex } from '@chakra-ui/core';
 import useFormat from '../../components/format/format';
 import { FaCopy, FaCog } from 'react-icons/fa';
 import SideBarIcon from './components/side-bar-icon/side-bar-icon';
 import { IconType } from 'react-icons/lib/cjs';
+import FileExplorer from './components/file-explorer/file-explorer';
+import Settings from './components/settings/settings';
+
+interface SideBarSection {
+  icon: IconType;
+  elem: ReactElement;
+}
 
 export default function SideBar(): ReactElement {
   const { bgColor, color } = useFormat();
-  const sideBarIcons: IconType[] = [FaCopy, FaCog];
-  const [activeSideBarIconIndex, setActiveSideBarIndex] = useState(0);
+  const sideBarSections: SideBarSection[] = [
+    {
+      icon: FaCopy,
+      elem: <FileExplorer />
+    },
+    {
+      icon: FaCog,
+      elem: <Settings />
+    }
+  ];
+  const [activeSideBarIconIndex, setActiveSideBarIndex] = useState(-1);
+
+  useEffect(() => {
+    setActiveSideBarIndex(0);
+  }, [setActiveSideBarIndex]);
 
   return (
-    <Box
-      color={color}
-      bg={bgColor}
-      py={0.5}
-      borderRightWidth="1px"
-      height="100vh"
-      width="65px"
-    >
-      {sideBarIcons.map((sideBarIcon, index) => (
-        <SideBarIcon
-          onClick={() => setActiveSideBarIndex(index)}
-          key={index}
-          icon={sideBarIcon}
-          isActive={activeSideBarIconIndex === index}
-        />
-      ))}
-    </Box>
+    <Flex>
+      <Box
+        color={color}
+        bg={bgColor}
+        py={0.5}
+        borderRightWidth="1px"
+        height="100vh"
+        width="65px"
+      >
+        {sideBarSections.map(({ icon, elem }, index) => (
+          <Box key={index}>
+            <SideBarIcon
+              onClick={() => setActiveSideBarIndex(index)}
+              icon={icon}
+              isActive={activeSideBarIconIndex === index}
+            />
+            {/* TODO: better fallback if sidebar section does not exists */}
+            {activeSideBarIconIndex === index
+              ? ReactDOM.createPortal(
+                  elem,
+                  document.getElementById('sidebar-section') || document.body
+                )
+              : null}
+          </Box>
+        ))}
+      </Box>
+      <Box
+        px={2}
+        py={2}
+        bg={bgColor}
+        color={color}
+        borderRightWidth="1px"
+        width="225px"
+        id="sidebar-section"
+      >
+        {/* portal for the side bar section */}
+      </Box>
+    </Flex>
   );
 }
