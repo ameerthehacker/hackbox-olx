@@ -1,19 +1,15 @@
 import React, { ReactElement } from 'react';
-import NavBar from '../../components/navbar/navbar';
-import SideBar from '../side-bar/side-bar';
-import Editor from '../editor/editor';
-import PreviewWindow from '../preview-window/preview-window';
+import { HashRouter, Route, Switch } from 'react-router-dom';
+import Hackbox from '../hackbox/hackbox';
 
 export default function App(): ReactElement {
   return (
     <>
-      <NavBar />
-      <SideBar>
-        <>
-          <Editor language="javascript" value={`console.log('hello world');`} />
-          <PreviewWindow />
-        </>
-      </SideBar>
+      <HashRouter>
+        <Switch>
+          <Route path={'/'} component={Hackbox} exact />
+        </Switch>
+      </HashRouter>
     </>
   );
 }
