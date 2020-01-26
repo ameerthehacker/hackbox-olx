@@ -46,7 +46,7 @@ export default function SideBar(): ReactElement {
         bg={bgColor}
         py={0.5}
         borderRightWidth="1px"
-        height="100vh"
+        height="calc(100vh - 55px)"
         width="65px"
       >
         {sideBarSections.map(({ icon, elem }, index) => (
