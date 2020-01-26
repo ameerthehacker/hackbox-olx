@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
+import NavBar from '../../components/navbar/navbar';
 
-const App: React.FC = () => {
+export default function App(): ReactElement {
   return (
-    <div>
-      <h1>Hello world from hackbox v2</h1>
-    </div>
+    <>
+      <NavBar />
+    </>
   );
-};
-
-export default App;
+}
