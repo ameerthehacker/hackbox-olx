@@ -14,7 +14,11 @@ interface SideBarSection {
   elem: ReactElement;
 }
 
-export default function SideBar(): ReactElement {
+interface SideBarProps {
+  children?: ReactElement;
+}
+
+export default function SideBar({ children }: SideBarProps): ReactElement {
   const { bgColor, color } = useFormat();
   // TODO: remove after we have a proper fs
   const DEV_FILES = {
@@ -77,6 +81,7 @@ export default function SideBar(): ReactElement {
       >
         {/* portal for the side bar section */}
       </Box>
+      {children}
     </Flex>
   );
 }
