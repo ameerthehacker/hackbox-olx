@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useColorMode } from '@chakra-ui/core';
 
@@ -6,7 +6,7 @@ interface EditorProps {
   [key: string]: string | number;
 }
 
-export default function Editor(props: EditorProps) {
+export default function Editor(props: EditorProps): ReactElement {
   const { colorMode } = useColorMode();
 
   return (
