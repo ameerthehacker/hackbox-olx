@@ -3,11 +3,12 @@ import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
 import Icon from './components/icon/icon';
 import { getFileExt } from '../../../../utils/utils';
+import { makeStyles } from '@material-ui/core';
+// SVG images for the file explorer
 import DefaultFolderSvg from './images/default-folder.svg';
 import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
-import { makeStyles } from '@material-ui/core';
 
 // these styles are used to remove the default highlight
 // may not play well with chakra ui theme
