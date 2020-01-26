@@ -7,6 +7,7 @@ import SideBarIcon from './components/side-bar-icon/side-bar-icon';
 import { IconType } from 'react-icons/lib/cjs';
 import FileExplorer from './components/file-explorer/file-explorer';
 import Settings from './components/settings/settings';
+import { FS } from '../../bundler/services/fs/fs';
 
 interface SideBarSection {
   icon: IconType;
@@ -15,10 +16,16 @@ interface SideBarSection {
 
 export default function SideBar(): ReactElement {
   const { bgColor, color } = useFormat();
+  // TODO: remove after we have a proper fs
+  const DEV_FILES = {
+    './index.js': `console.log('hi')`,
+    './components/hello.js': `console.log('hello')`
+  };
+  const fs = new FS(DEV_FILES);
   const sideBarSections: SideBarSection[] = [
     {
       icon: FaCopy,
-      elem: <FileExplorer />
+      elem: <FileExplorer fs={fs} rootPath="." />
     },
     {
       icon: FaCog,

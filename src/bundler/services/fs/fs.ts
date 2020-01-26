@@ -8,6 +8,14 @@ export class FS {
     this.vol = Volume.fromJSON(files);
   }
 
+  isDirectory(path: string): boolean {
+    return this.vol.lstatSync(path).isDirectory();
+  }
+
+  readDir(path: string): string[] {
+    return this.vol.readdirSync(path);
+  }
+
   importFromJSON(files: Record<string, string>): void {
     this.vol.fromJSON(files);
   }
