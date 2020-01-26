@@ -7,7 +7,7 @@ import SideBarIcon from './components/side-bar-icon/side-bar-icon';
 import { IconType } from 'react-icons/lib/cjs';
 import FileExplorer from './components/file-explorer/file-explorer';
 import Settings from './components/settings/settings';
-import { FS } from '../../bundler/services/fs/fs';
+import { FS } from '../../services/fs/fs';
 
 interface SideBarSection {
   icon: IconType;

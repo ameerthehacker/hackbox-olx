@@ -1,8 +1,8 @@
 import React, { ReactElement } from 'react';
 import { TreeView, TreeItem } from '@material-ui/lab';
-import { FS } from '../../../../bundler/services/fs/fs';
+import { FS } from '../../../../services/fs/fs';
 import Icon from './components/icon/icon';
-import { getFileExt } from '../../../../bundler/utils/utils';
+import { getFileExt } from '../../../../utils/utils';
 import DefaultFolderSvg from './images/default-folder.svg';
 import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';

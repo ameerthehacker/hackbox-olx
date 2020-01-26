@@ -5,7 +5,7 @@ import {
   getFileName,
   getFileMetaData
 } from './utils';
-import { FileMetaData } from '../contracts/file-meta-data';
+import { FileMetaData } from '../bundler/contracts/file-meta-data';
 
 describe('utils', () => {
   describe('getCanocialName()', () => {

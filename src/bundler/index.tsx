@@ -1,6 +1,6 @@
-import { getFileMetaData } from './utils/utils';
+import { getFileMetaData } from '../utils/utils';
 import { FileMetaData } from './contracts/file-meta-data';
-import { FS } from './services/fs/fs';
+import { FS } from '../services/fs/fs';
 import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache/code-cache';
 import { ModuleDef } from './contracts/module-def';

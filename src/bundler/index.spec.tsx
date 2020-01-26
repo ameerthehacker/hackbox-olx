@@ -1,8 +1,8 @@
 import { transform } from '@babel/standalone';
 import { babelPlugin, buildExecutableModules, run } from './index';
 import { FileMetaData } from './contracts/file-meta-data';
-import { getFileMetaData } from './utils/utils';
-import { FS } from './services/fs/fs';
+import { getFileMetaData } from '../utils/utils';
+import { FS } from '../services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 
 let someFileMetaData: FileMetaData;

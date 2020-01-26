@@ -1,4 +1,4 @@
-import { FileMetaData } from '../contracts/file-meta-data';
+import { FileMetaData } from '../bundler/contracts/file-meta-data';
 
 export function getFileExt(fileName: string): string {
   const fileNameArr = fileName.split('.');
