@@ -5,6 +5,7 @@ import Editor from '../editor/editor';
 import PreviewWindow from '../preview-window/preview-window';
 import { useSelectedFile } from '../../contexts/selected-file';
 import { FSContext } from '../../contexts/fs';
+import EmptyState from './components/empty-state/empty-state';
 
 export default function Hackbox(): ReactElement {
   const fs = useContext(FSContext);
@@ -27,7 +28,11 @@ export default function Hackbox(): ReactElement {
       <NavBar />
       <SideBar>
         <>
-          <Editor language="javascript" value={code} />
+          {selectedFile !== undefined ? (
+            <Editor language="javascript" value={code} />
+          ) : (
+            <EmptyState />
+          )}
           <PreviewWindow />
         </>
       </SideBar>
