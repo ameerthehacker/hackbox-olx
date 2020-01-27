@@ -1,4 +1,4 @@
-import React, { ReactElement, useState, useEffect } from 'react';
+import React, { ReactElement, useState, useEffect, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import { Box, Flex } from '@chakra-ui/core';
 import useFormat from '../../components/format/format';
@@ -7,7 +7,7 @@ import SideBarIcon from './components/side-bar-icon/side-bar-icon';
 import { IconType } from 'react-icons/lib/cjs';
 import FileExplorer from './components/file-explorer/file-explorer';
 import Settings from './components/settings/settings';
-import { FS } from '../../services/fs/fs';
+import { FSContext } from '../../contexts/fs';
 
 interface SideBarSection {
   icon: IconType;
@@ -20,13 +20,7 @@ interface SideBarProps {
 
 export default function SideBar({ children }: SideBarProps): ReactElement {
   const { bgColor, color } = useFormat();
-  // TODO: remove after we have a proper fs
-  const DEV_FILES = {
-    './index.js': `console.log('hi')`,
-    './something': `he ha`,
-    './components/hello.js': `console.log('hello')`
-  };
-  const fs = new FS(DEV_FILES);
+  const fs = useContext(FSContext);
   const sideBarSections: SideBarSection[] = [
     {
       icon: FaCopy,

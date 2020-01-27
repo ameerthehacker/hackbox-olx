@@ -9,6 +9,7 @@ import DefaultFolderSvg from './images/default-folder.svg';
 import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
+import { useSelectedFile } from '../../../../contexts/selected-file';
 
 // these styles are used to remove the default highlight
 // may not play well with chakra ui theme
@@ -26,7 +27,7 @@ const useTreeItemStyles = makeStyles((theme) => ({
 
 interface FileExplorerProps {
   rootPath: string;
-  fs: FS;
+  fs: FS | undefined;
 }
 
 function getFileIcon(fileName: string): string {
@@ -43,6 +44,10 @@ export default function FileExplorer({
   rootPath,
   fs
 }: FileExplorerProps): ReactElement {
+  if (fs === undefined) {
+    throw new Error('file system not provided');
+  }
+
   const paths: string[] = fs.readDir(rootPath);
   const files: string[] = paths.filter(
     (path) => !fs.isDirectory(`${rootPath}/${path}`)
@@ -51,6 +56,7 @@ export default function FileExplorer({
     fs.isDirectory(`${rootPath}/${path}`)
   );
   const classes = useTreeItemStyles();
+  const [, setSelectedFile] = useSelectedFile();
 
   return (
     <TreeView
@@ -84,6 +90,7 @@ export default function FileExplorer({
               root: classes.root,
               content: classes.content
             }}
+            onClick={(): void => setSelectedFile(relativePath)}
             icon={<Icon icon={getFileIcon(file)} />}
             key={relativePath}
             nodeId={relativePath}
