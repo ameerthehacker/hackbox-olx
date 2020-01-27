@@ -66,7 +66,6 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
       </Box>
       <Box
         py={3}
-        px={3}
         bg={bgColor}
         color={color}
         borderRightWidth="1px"

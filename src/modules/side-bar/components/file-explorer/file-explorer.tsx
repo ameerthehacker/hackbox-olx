@@ -3,13 +3,14 @@ import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
 import Icon from './components/icon/icon';
 import { getFileExt } from '../../../../utils/utils';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles, useTheme } from '@material-ui/core';
 // SVG images for the file explorer
 import DefaultFolderSvg from './images/default-folder.svg';
 import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
 import { useSelectedFile } from '../../../../contexts/selected-file';
+import { theme, PseudoBox } from '@chakra-ui/core';
 
 // these styles are used to remove the default highlight
 // may not play well with chakra ui theme
@@ -18,10 +19,20 @@ const useTreeItemStyles = makeStyles((theme) => ({
     '&:focus > $content': {
       backgroundColor: `transparent`
     },
-    padding: theme.spacing(0.15)
+    '&:hover > $content': {
+      backgroundColor: `transparent`
+    },
+    padding: theme.spacing(0.2, 0)
   },
   content: {
-    padding: theme.spacing(0.15)
+    padding: theme.spacing(0.15),
+    marginLeft: theme.spacing(1)
+  },
+  group: {
+    marginLeft: 0,
+    '& $content': {
+      paddingLeft: theme.spacing(2)
+    }
   }
 }));
 
@@ -56,7 +67,7 @@ export default function FileExplorer({
     fs.isDirectory(`${rootPath}/${path}`)
   );
   const classes = useTreeItemStyles();
-  const [, setSelectedFile] = useSelectedFile();
+  const [selectedFile, setSelectedFile] = useSelectedFile();
 
   return (
     <TreeView
@@ -66,13 +77,30 @@ export default function FileExplorer({
     >
       {directories.map((directory) => {
         const relativePath = `${rootPath}/${directory}`;
+        const stylesIfSelected = {
+          bg: theme.colors.teal[500],
+          color: theme.colors.white,
+          borderLeftWidth: '4px',
+          borderRightColor: theme.colors.teal[500],
+          borderLeftColor: theme.colors.teal[700]
+        };
+        const stylesIfNotSelected = {
+          _hover: {
+            bg: theme.colors.teal[50],
+            color: theme.colors.black
+          }
+        };
+        const isSelected = selectedFile === relativePath;
+        const styles = isSelected ? stylesIfSelected : stylesIfNotSelected;
 
         return (
           <TreeItem
             classes={{
               root: classes.root,
-              content: classes.content
+              content: classes.content,
+              group: classes.group
             }}
+            {...styles}
             key={relativePath}
             label={directory}
             nodeId={relativePath}
@@ -83,19 +111,35 @@ export default function FileExplorer({
       })}
       {files.map((file) => {
         const relativePath = `${rootPath}/${file}`;
+        const stylesIfSelected = {
+          bg: theme.colors.teal[500],
+          color: theme.colors.white,
+          borderLeftWidth: '4px',
+          borderRightColor: theme.colors.teal[500],
+          borderLeftColor: theme.colors.teal[700]
+        };
+        const stylesIfNotSelected = {
+          _hover: {
+            bg: theme.colors.teal[50],
+            color: theme.colors.black
+          }
+        };
+        const isSelected = selectedFile === relativePath;
+        const styles = isSelected ? stylesIfSelected : stylesIfNotSelected;
 
         return (
-          <TreeItem
-            classes={{
-              root: classes.root,
-              content: classes.content
-            }}
-            onClick={(): void => setSelectedFile(relativePath)}
-            icon={<Icon icon={getFileIcon(file)} />}
-            key={relativePath}
-            nodeId={relativePath}
-            label={file}
-          />
+          <PseudoBox {...styles} key={relativePath}>
+            <TreeItem
+              classes={{
+                root: classes.root,
+                content: classes.content
+              }}
+              onClick={(): void => setSelectedFile(relativePath)}
+              icon={<Icon icon={getFileIcon(file)} />}
+              nodeId={relativePath}
+              label={file}
+            />
+          </PseudoBox>
         );
       })}
     </TreeView>
