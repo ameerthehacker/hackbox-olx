@@ -3,7 +3,7 @@ import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
 import Icon from './components/icon/icon';
 import { getFileExt } from '../../../../utils/utils';
-import { makeStyles, useTheme } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 // SVG images for the file explorer
 import DefaultFolderSvg from './images/default-folder.svg';
 import DefaultFolderOpenSvg from './images/default-folder-open.svg';

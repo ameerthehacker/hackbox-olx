@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { Flex, Text, Stack, Box } from '@chakra-ui/core';
 import useFormat from '../../../../components/format/format';
 import { ReactComponent as BoxImage } from './box.svg';
 
-export default function EmptyState() {
+export default function EmptyState(): ReactElement {
   const { bgColor, color } = useFormat();
 
   return (
