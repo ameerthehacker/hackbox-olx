@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { IconType } from 'react-icons/lib/cjs';
-import { Box } from '@chakra-ui/core';
+import { Box, theme } from '@chakra-ui/core';
 import useFormat from '../../../../components/format/format';
 
 interface SideBarIconProps {
@@ -20,7 +20,7 @@ export default function SideBarIcon({
 
   return (
     <Box
-      borderLeftColor={isActive ? color : 'transparent'}
+      borderLeftColor={isActive ? theme.colors.teal[500] : 'transparent'}
       borderLeftWidth={4}
       cursor="pointer"
       p={2}
