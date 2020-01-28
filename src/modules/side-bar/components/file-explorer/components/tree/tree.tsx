@@ -24,11 +24,13 @@ export function Tree({
   return (
     <>
       <Box
+        p={0.5}
         cursor="pointer"
         onClick={() => setIsCollaped((isCollapsed) => !isCollapsed)}
       >
-        <Flex>
-          {isCollapsed ? expandIcon : collapseIcon} {label}
+        <Flex alignItems="center">
+          <Box>{isCollapsed ? expandIcon : collapseIcon}</Box>
+          <Box ml={1}>{label}</Box>
         </Flex>
       </Box>
       <Collapse isOpen={!isCollapsed}>
@@ -57,6 +59,7 @@ export function TreeItem({
     <Box
       cursor="pointer"
       marginLeft={1}
+      p={0.5}
       onClick={(): void => (onClick ? onClick() : null)}
     >
       <Flex>

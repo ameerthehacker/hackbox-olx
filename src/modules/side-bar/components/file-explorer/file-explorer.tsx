@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useRef, useEffect } from 'react';
 // import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
 import FileIcon from './components/file-icon/file-icon';
@@ -9,8 +9,9 @@ import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
 import { useSelectedFile } from '../../../../contexts/selected-file';
-import { theme, PseudoBox } from '@chakra-ui/core';
+import { theme, PseudoBox, Box, Flex } from '@chakra-ui/core';
 import { Tree, TreeItem, TreeConfigContext } from './components/tree/tree';
+import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
 interface FileExplorerProps {
   rootPath: string;
@@ -55,16 +56,11 @@ function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
       {files.map((file) => {
         const relativePath = `${rootPath}/${file}`;
         const stylesIfSelected = {
-          bg: theme.colors.teal[500],
-          color: theme.colors.white,
-          borderLeftWidth: '4px',
-          borderRightColor: theme.colors.teal[500],
-          borderLeftColor: theme.colors.teal[700]
+          color: theme.colors.teal[500]
         };
         const stylesIfNotSelected = {
           _hover: {
-            bg: theme.colors.teal[50],
-            color: theme.colors.black
+            color: theme.colors.teal[300]
           }
         };
         const isSelected = selectedFile === relativePath;
@@ -85,14 +81,29 @@ function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
 }
 
 export default function FileExplorer(props: FileExplorerProps) {
+  const treeConfigRef = useRef<object>({
+    defaultExpandIcon: (
+      <Flex alignItems="center">
+        <Box fontSize="15px" as={FaChevronRight}></Box>
+        <FileIcon ml={1} icon={DefaultFolderSvg} />
+      </Flex>
+    ),
+    defaultCollapseIcon: (
+      <Flex alignItems="center">
+        <Box fontSize="15px" as={FaChevronDown}></Box>
+        <FileIcon ml={1} icon={DefaultFolderOpenSvg} />
+      </Flex>
+    )
+  });
+
   return (
-    <TreeConfigContext.Provider
-      value={{
-        defaultExpandIcon: <FileIcon icon={DefaultFolderSvg} />,
-        defaultCollapseIcon: <FileIcon icon={DefaultFolderOpenSvg} />
-      }}
-    >
-      <FileTree {...props} />
+    <TreeConfigContext.Provider value={treeConfigRef.current}>
+      <Box borderBottomWidth="1px" p={1}>
+        FILES
+      </Box>
+      <Box p={1} px={3}>
+        <FileTree {...props} />
+      </Box>
     </TreeConfigContext.Provider>
   );
 }

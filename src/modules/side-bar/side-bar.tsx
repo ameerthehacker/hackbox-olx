@@ -65,11 +65,10 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
         ))}
       </Box>
       <Box
-        py={3}
         bg={bgColor}
         color={color}
         borderRightWidth="1px"
-        width="225px"
+        width="350px"
         id="sidebar-section"
       >
         {/* portal for the side bar section */}
