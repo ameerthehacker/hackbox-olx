@@ -5,5 +5,5 @@ interface FileIconProps {
 }
 
 export default function FileIcon({ icon }: FileIconProps): ReactElement {
-  return <img alt="file-explorer icon" src={icon} />;
+  return <img width="20px" alt="file-explorer icon" src={icon} />;
 }
