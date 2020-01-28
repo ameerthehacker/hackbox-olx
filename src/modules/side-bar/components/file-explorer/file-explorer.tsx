@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
-import Icon from './components/icon/icon';
+import FileIcon from './components/file-icon/file-icon';
 import { getFileExt } from '../../../../utils/utils';
 import { makeStyles } from '@material-ui/core';
 // SVG images for the file explorer
@@ -71,8 +71,8 @@ export default function FileExplorer({
 
   return (
     <TreeView
-      defaultExpandIcon={<Icon icon={DefaultFolderSvg} />}
-      defaultCollapseIcon={<Icon icon={DefaultFolderOpenSvg} />}
+      defaultExpandIcon={<FileIcon icon={DefaultFolderSvg} />}
+      defaultCollapseIcon={<FileIcon icon={DefaultFolderOpenSvg} />}
       className={classes.root}
     >
       {directories.map((directory) => {
@@ -135,7 +135,7 @@ export default function FileExplorer({
                 content: classes.content
               }}
               onClick={(): void => setSelectedFile(relativePath)}
-              icon={<Icon icon={getFileIcon(file)} />}
+              icon={<FileIcon icon={getFileIcon(file)} />}
               nodeId={relativePath}
               label={file}
             />

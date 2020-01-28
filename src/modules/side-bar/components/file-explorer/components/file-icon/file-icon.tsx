@@ -1,9 +1,9 @@
 import React, { ReactElement } from 'react';
 
-interface IconProps {
+interface FileIconProps {
   icon: string;
 }
 
-export default function Icon({ icon }: IconProps): ReactElement {
+export default function FileIcon({ icon }: FileIconProps): ReactElement {
   return <img alt="file-explorer icon" src={icon} />;
 }
