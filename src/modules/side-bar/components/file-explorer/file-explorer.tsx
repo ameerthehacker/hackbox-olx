@@ -1,4 +1,4 @@
-import React, { ReactElement, useRef, useEffect } from 'react';
+import React, { ReactElement, useRef } from 'react';
 // import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
 import FileIcon from './components/file-icon/file-icon';
@@ -9,7 +9,7 @@ import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
 import { useSelectedFile } from '../../../../contexts/selected-file';
-import { theme, PseudoBox, Box, Flex } from '@chakra-ui/core';
+import { Box, Flex } from '@chakra-ui/core';
 import { Tree, TreeItem, TreeConfigContext } from './components/tree/tree';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
@@ -48,39 +48,35 @@ function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
         const relativePath = `${rootPath}/${directory}`;
 
         return (
-          <Tree key={relativePath} label={directory}>
+          <Tree
+            isSelected={selectedFile === relativePath}
+            onClick={(): void => setSelectedFile(relativePath)}
+            key={relativePath}
+            label={directory}
+          >
             <FileTree fs={fs} rootPath={relativePath} />
           </Tree>
         );
       })}
       {files.map((file) => {
         const relativePath = `${rootPath}/${file}`;
-        const stylesIfSelected = {
-          color: theme.colors.teal[500]
-        };
-        const stylesIfNotSelected = {
-          _hover: {
-            color: theme.colors.teal[300]
-          }
-        };
         const isSelected = selectedFile === relativePath;
-        const styles = isSelected ? stylesIfSelected : stylesIfNotSelected;
 
         return (
-          <PseudoBox {...styles} key={relativePath}>
-            <TreeItem
-              onClick={(): void => setSelectedFile(relativePath)}
-              icon={<FileIcon icon={getFileIcon(file)} />}
-              label={file}
-            />
-          </PseudoBox>
+          <TreeItem
+            key={relativePath}
+            onClick={(): void => setSelectedFile(relativePath)}
+            icon={<FileIcon icon={getFileIcon(file)} />}
+            label={file}
+            isSelected={isSelected}
+          />
         );
       })}
     </>
   );
 }
 
-export default function FileExplorer(props: FileExplorerProps) {
+export default function FileExplorer(props: FileExplorerProps): ReactElement {
   const treeConfigRef = useRef<object>({
     defaultExpandIcon: (
       <Flex alignItems="center">

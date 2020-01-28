@@ -17,7 +17,8 @@ export default function Hackbox(): ReactElement {
 
   const [selectedFile] = useSelectedFile();
 
-  if (selectedFile !== undefined) {
+  if (selectedFile !== undefined && !fs.isDirectory(selectedFile)) {
+    // dirty
     fs.readFile(selectedFile).then((fileContent) => {
       setCode(fileContent);
     });
@@ -28,7 +29,7 @@ export default function Hackbox(): ReactElement {
       <NavBar />
       <SideBar>
         <>
-          {selectedFile !== undefined ? (
+          {selectedFile !== undefined && !fs.isDirectory(selectedFile) ? (
             <Editor language="javascript" value={code} />
           ) : (
             <EmptyState />
