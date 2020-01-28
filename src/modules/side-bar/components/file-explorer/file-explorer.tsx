@@ -60,7 +60,9 @@ function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
             key={relativePath}
             label={directory}
           >
-            <FileTree fs={fs} rootPath={relativePath} />
+            <Box ml={2}>
+              <FileTree fs={fs} rootPath={relativePath} />
+            </Box>
           </Tree>
         );
       })}
@@ -140,7 +142,7 @@ export default function FileExplorer(props: FileExplorerProps): ReactElement {
 
       <AddFileOrFolder
         onClose={(fileOrFolderName): void => {
-          if (fileOrFolderName !== null) {
+          if (fileOrFolderName !== null && fileOrFolderName.length > 0) {
             const { fs } = props;
 
             const selectedPath = fs?.getBasePath(selectedFile || '');
@@ -171,6 +173,8 @@ export default function FileExplorer(props: FileExplorerProps): ReactElement {
                   });
                 });
             }
+          } else {
+            setIsNewFolderOrFileModalOpen(false);
           }
         }}
         isOpen={isNewFolderOrFileModalOpen}

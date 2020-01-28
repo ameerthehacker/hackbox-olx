@@ -58,8 +58,8 @@ export function Tree({
           </PseudoBox>
         </Flex>
       </Box>
-      <Collapse isOpen={!isCollapsed}>
-        <Box ml={1}>{children}</Box>
+      <Collapse ml={1} isOpen={!isCollapsed}>
+        <Box>{children}</Box>
       </Collapse>
     </>
   );
@@ -86,7 +86,6 @@ export function TreeItem({
   return (
     <Box
       cursor="pointer"
-      marginLeft={1}
       p={0.5}
       onClick={(): void => (onClick ? onClick() : null)}
     >
