@@ -1,4 +1,4 @@
-import React, { ReactElement, useRef } from 'react';
+import React, { ReactElement, useRef, useState } from 'react';
 // import { TreeView, TreeItem } from '@material-ui/lab';
 import { FS } from '../../../../services/fs/fs';
 import FileIcon from './components/file-icon/file-icon';
@@ -9,9 +9,15 @@ import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
 import { useSelectedFile } from '../../../../contexts/selected-file';
-import { Box, Flex } from '@chakra-ui/core';
+import { Box, Flex, Stack } from '@chakra-ui/core';
 import { Tree, TreeItem, TreeConfigContext } from './components/tree/tree';
-import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import {
+  FaChevronRight,
+  FaChevronDown,
+  FaFolderPlus,
+  FaFile
+} from 'react-icons/fa';
+import AddFileOrFolder from './components/add-modal/add-modal';
 
 interface FileExplorerProps {
   rootPath: string;
@@ -77,6 +83,11 @@ function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
 }
 
 export default function FileExplorer(props: FileExplorerProps): ReactElement {
+  const [isNewFolderOrFileModalOpen, setIsNewFolderOrFileModalOpen] = useState(
+    false
+  );
+  const [isNewFolder, setIsNewFolder] = useState(false);
+
   const treeConfigRef = useRef<object>({
     defaultExpandIcon: (
       <Flex alignItems="center">
@@ -92,14 +103,46 @@ export default function FileExplorer(props: FileExplorerProps): ReactElement {
     )
   });
 
+  function showNewFolderModal(): void {
+    setIsNewFolder(true);
+    setIsNewFolderOrFileModalOpen(true);
+  }
+
+  function showNewFileModel(): void {
+    setIsNewFolder(false);
+    setIsNewFolderOrFileModalOpen(true);
+  }
+
   return (
     <TreeConfigContext.Provider value={treeConfigRef.current}>
       <Box borderBottomWidth="1px" p={1}>
-        FILES
+        <Flex alignItems="center" justifyContent="space-between">
+          <Box>FILES</Box>
+          <Stack direction="row">
+            <Box
+              onClick={(): void => showNewFolderModal()}
+              cursor="pointer"
+              as={FaFolderPlus}
+            />
+            <Box
+              onClick={(): void => showNewFileModel()}
+              cursor="pointer"
+              as={FaFile}
+            />
+          </Stack>
+        </Flex>
       </Box>
       <Box p={1} px={3}>
         <FileTree {...props} />
       </Box>
+      <AddFileOrFolder
+        onClose={(fileOrFolderName): void => {
+          setIsNewFolderOrFileModalOpen(false);
+          console.log(fileOrFolderName);
+        }}
+        isOpen={isNewFolderOrFileModalOpen}
+        isFolder={isNewFolder}
+      />
     </TreeConfigContext.Provider>
   );
 }
