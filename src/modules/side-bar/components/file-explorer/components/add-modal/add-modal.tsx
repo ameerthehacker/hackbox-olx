@@ -35,7 +35,7 @@ export default function AddFileOrFolder({
   const type = isFolder ? 'folder' : 'file';
 
   return (
-    <Modal onClose={() => onClose(null)} isOpen={isOpen}>
+    <Modal onClose={(): void => onClose(null)} isOpen={isOpen}>
       <ModalOverlay />
       <ModalContent color={color}>
         <ModalHeader>New {type}</ModalHeader>

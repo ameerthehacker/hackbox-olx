@@ -24,7 +24,7 @@ export class FS {
     return this.vol.toJSON();
   }
 
-  getBasePath(path: string) {
+  getBasePath(path: string): string {
     if (!this.isDirectory(path)) {
       const pathArr = path.split('/');
 
