@@ -31,7 +31,9 @@ export function Tree({
           {isCollapsed ? expandIcon : collapseIcon} {label}
         </Flex>
       </Box>
-      <Collapse isOpen={!isCollapsed}>{children}</Collapse>
+      <Collapse isOpen={!isCollapsed}>
+        <Box ml={1}>{children}</Box>
+      </Collapse>
     </>
   );
 }
@@ -52,7 +54,11 @@ export function TreeItem({
   icon = icon || treeConfig?.defaultIcon;
 
   return (
-    <Box cursor="pointer" onClick={(): void => (onClick ? onClick() : null)}>
+    <Box
+      cursor="pointer"
+      marginLeft={1}
+      onClick={(): void => (onClick ? onClick() : null)}
+    >
       <Flex>
         {icon} {label}
       </Flex>

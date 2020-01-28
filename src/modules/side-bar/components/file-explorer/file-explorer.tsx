@@ -27,10 +27,7 @@ function getFileIcon(fileName: string): string {
   }
 }
 
-export default function FileExplorer({
-  rootPath,
-  fs
-}: FileExplorerProps): ReactElement {
+function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
   if (fs === undefined) {
     throw new Error('file system not provided');
   }
@@ -45,18 +42,13 @@ export default function FileExplorer({
   const [selectedFile, setSelectedFile] = useSelectedFile();
 
   return (
-    <TreeConfigContext.Provider
-      value={{
-        defaultExpandIcon: <FileIcon icon={DefaultFolderSvg} />,
-        defaultCollapseIcon: <FileIcon icon={DefaultFolderOpenSvg} />
-      }}
-    >
+    <>
       {directories.map((directory) => {
         const relativePath = `${rootPath}/${directory}`;
 
         return (
           <Tree key={relativePath} label={directory}>
-            <FileExplorer fs={fs} rootPath={relativePath} />
+            <FileTree fs={fs} rootPath={relativePath} />
           </Tree>
         );
       })}
@@ -88,6 +80,19 @@ export default function FileExplorer({
           </PseudoBox>
         );
       })}
+    </>
+  );
+}
+
+export default function FileExplorer(props: FileExplorerProps) {
+  return (
+    <TreeConfigContext.Provider
+      value={{
+        defaultExpandIcon: <FileIcon icon={DefaultFolderSvg} />,
+        defaultCollapseIcon: <FileIcon icon={DefaultFolderOpenSvg} />
+      }}
+    >
+      <FileTree {...props} />
     </TreeConfigContext.Provider>
   );
 }
