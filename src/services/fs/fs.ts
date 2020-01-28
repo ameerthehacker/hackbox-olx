@@ -24,6 +24,30 @@ export class FS {
     return this.vol.toJSON();
   }
 
+  getBasePath(path: string) {
+    if (!this.isDirectory(path)) {
+      const pathArr = path.split('/');
+
+      pathArr.pop();
+
+      return pathArr.join('/');
+    } else {
+      return path;
+    }
+  }
+
+  async mkdir(dirname: string): Promise<void> {
+    return await this.vol.mkdirSync(dirname);
+  }
+
+  async createFile(filename: string): Promise<void> {
+    if (await this.vol.existsSync(filename)) {
+      throw new Error(`file already exists`);
+    }
+
+    return await this.vol.writeFileSync(filename, '');
+  }
+
   async readFile(filePath: string): Promise<string> {
     return await this.vol.readFileSync(filePath).toString('utf-8');
   }

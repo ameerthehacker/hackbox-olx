@@ -9,7 +9,7 @@ import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import JSSvg from './images/js.svg';
 import DefaultFileSvg from './images/default-file.svg';
 import { useSelectedFile } from '../../../../contexts/selected-file';
-import { Box, Flex, Stack } from '@chakra-ui/core';
+import { Box, Flex, Stack, useToast } from '@chakra-ui/core';
 import { Tree, TreeItem, TreeConfigContext } from './components/tree/tree';
 import {
   FaChevronRight,
@@ -87,6 +87,8 @@ export default function FileExplorer(props: FileExplorerProps): ReactElement {
     false
   );
   const [isNewFolder, setIsNewFolder] = useState(false);
+  const [selectedFile] = useSelectedFile();
+  const toast = useToast();
 
   const treeConfigRef = useRef<object>({
     defaultExpandIcon: (
@@ -135,10 +137,41 @@ export default function FileExplorer(props: FileExplorerProps): ReactElement {
       <Box p={1} px={3}>
         <FileTree {...props} />
       </Box>
+
       <AddFileOrFolder
         onClose={(fileOrFolderName): void => {
-          setIsNewFolderOrFileModalOpen(false);
-          console.log(fileOrFolderName);
+          if (fileOrFolderName !== null) {
+            const { fs } = props;
+
+            const selectedPath = fs?.getBasePath(selectedFile || '');
+            const fileOrFolderNameWithPath = `${selectedPath}/${fileOrFolderName}`;
+
+            if (isNewFolder) {
+              fs?.mkdir(fileOrFolderNameWithPath)
+                .then(() => setIsNewFolderOrFileModalOpen(false))
+                .catch((err) => {
+                  setIsNewFolderOrFileModalOpen(false);
+
+                  toast({
+                    title: 'Unable to create folder',
+                    description: `${err}`,
+                    status: 'error'
+                  });
+                });
+            } else {
+              fs?.createFile(fileOrFolderNameWithPath)
+                .then(() => setIsNewFolderOrFileModalOpen(false))
+                .catch((err) => {
+                  setIsNewFolderOrFileModalOpen(false);
+
+                  toast({
+                    title: 'Unable to create file',
+                    description: `${err}`,
+                    status: 'error'
+                  });
+                });
+            }
+          }
         }}
         isOpen={isNewFolderOrFileModalOpen}
         isFolder={isNewFolder}
