@@ -39,15 +39,20 @@ export function Tree({
 interface TreeItemProps {
   label: string;
   icon?: ReactElement;
+  onClick?: Function;
 }
 
-export function TreeItem({ label, icon }: TreeItemProps): ReactElement {
+export function TreeItem({
+  label,
+  icon,
+  onClick
+}: TreeItemProps): ReactElement {
   const treeConfig = useContext(TreeConfigContext);
 
   icon = icon || treeConfig?.defaultIcon;
 
   return (
-    <Box cursor="pointer">
+    <Box cursor="pointer" onClick={(): void => (onClick ? onClick() : null)}>
       <Flex>
         {icon} {label}
       </Flex>

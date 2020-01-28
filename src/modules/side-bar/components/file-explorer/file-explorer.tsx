@@ -81,7 +81,7 @@ export default function FileExplorer({
         return (
           <PseudoBox {...styles} key={relativePath}>
             <TreeItem
-              // onClick={(): void => setSelectedFile(relativePath)}
+              onClick={(): void => setSelectedFile(relativePath)}
               icon={<FileIcon icon={getFileIcon(file)} />}
               label={file}
             />
