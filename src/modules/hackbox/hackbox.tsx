@@ -9,7 +9,7 @@ import EmptyState from './components/empty-state/empty-state';
 
 export default function Hackbox(): ReactElement {
   const fs = useContext(FSContext);
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState<string | null>(null);
 
   if (fs === undefined) {
     throw new Error('file system not provided');
@@ -29,7 +29,7 @@ export default function Hackbox(): ReactElement {
       <NavBar />
       <SideBar>
         <>
-          {selectedFile !== undefined && !fs.isDirectory(selectedFile) ? (
+          {code !== null ? (
             <Editor language="javascript" value={code} />
           ) : (
             <EmptyState />
