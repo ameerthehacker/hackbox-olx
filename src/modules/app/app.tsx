@@ -4,6 +4,7 @@ import Hackbox from '../hackbox/hackbox';
 import { SelectedFileProvider } from '../../contexts/selected-file';
 import { FSContext } from '../../contexts/fs';
 import { FS } from '../../services/fs/fs';
+import { Broadcaster } from '../../services/broadcaster/broadcaster';
 
 export default function App(): ReactElement {
   // TODO: replace with template files
@@ -17,6 +18,14 @@ export { welcome as something };`,
 
 hello();`
   };
+  const broadcaster = Broadcaster.getInstance();
+
+  broadcaster.listen('PREVIEW_READY', () => {
+    broadcaster.broadcast('FS_UPDATE', {
+      fsJSON: DEV_FILES,
+      entry: './index.js'
+    });
+  });
 
   return (
     <SelectedFileProvider>

@@ -9,7 +9,10 @@ interface EditorProps {
   onSave?: (newValue: string) => void;
 }
 
-export default function Editor({ onSave, ...rest }: EditorProps): ReactElement {
+export default function Editor({
+  onSave,
+  ...restProps
+}: EditorProps): ReactElement {
   type IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
   const { colorMode } = useColorMode();
   const editorRef = useRef<IStandaloneCodeEditor>();
@@ -18,12 +21,15 @@ export default function Editor({ onSave, ...rest }: EditorProps): ReactElement {
     editorRef.current = editor;
   }
 
-  function onKeyDown(evt: KeyboardEvent) {
+  function onKeyDown(evt: KeyboardEvent): void {
     if ((evt.metaKey || evt.ctrlKey) && evt.key === 's') {
       evt.preventDefault();
 
       if (editorRef.current !== undefined && onSave !== undefined) {
-        onSave(editorRef.current.getValue());
+        // don't trigger save if the file contents don't change
+        if (restProps.value !== editorRef.current.getValue()) {
+          onSave(editorRef.current.getValue());
+        }
       }
     }
   }
@@ -39,7 +45,7 @@ export default function Editor({ onSave, ...rest }: EditorProps): ReactElement {
           wordWrap: 'on',
           selectOnLineNumbers: true
         }}
-        {...rest}
+        {...restProps}
         editorDidMount={onEditorMounted}
         loading={<Loading />}
         height="calc(100vh - 55px)"

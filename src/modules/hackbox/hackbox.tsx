@@ -6,11 +6,12 @@ import PreviewWindow from '../preview-window/preview-window';
 import { useSelectedFile } from '../../contexts/selected-file';
 import { FSContext } from '../../contexts/fs';
 import EmptyState from './components/empty-state/empty-state';
+import { Broadcaster } from '../../services/broadcaster/broadcaster';
 
 export default function Hackbox(): ReactElement {
   const fs = useContext(FSContext);
   const [code, setCode] = useState<string | null>(null);
-  const bc = new BroadcastChannel('PREVIEW');
+  const broadcaster = Broadcaster.getInstance();
 
   if (fs === undefined) {
     throw new Error('file system not provided');
@@ -24,10 +25,13 @@ export default function Hackbox(): ReactElement {
     });
   }
 
-  function onSave(newCode: string) {
+  function onSave(newCode: string): void {
     if (selectedFile !== undefined) {
       fs?.writeFile(selectedFile, newCode).then(() => {
-        bc.postMessage(fs.exportToJSON());
+        broadcaster.broadcast('FS_UPDATE', {
+          entry: './index.js',
+          fsJSON: fs.exportToJSON()
+        });
       });
     }
   }
