@@ -10,7 +10,9 @@ export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
     './modules/welcome.js': `function welcome() { 
-  document.getElementById('root').innerHTML='hello world';   
+  document
+    .getElementById('output')
+    .innerHTML='<h1>Hello world from Hackbox!!!</h1>';   
 }
 
 export { welcome as something };`,
