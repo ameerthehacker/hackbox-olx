@@ -26,10 +26,8 @@ export default function Editor({
       evt.preventDefault();
 
       if (editorRef.current !== undefined && onSave !== undefined) {
-        // don't trigger save if the file contents don't change
-        if (restProps.value !== editorRef.current.getValue()) {
-          onSave(editorRef.current.getValue());
-        }
+        // TODO: don't trigger save if the file contents don't change
+        onSave(editorRef.current.getValue());
       }
     }
   }

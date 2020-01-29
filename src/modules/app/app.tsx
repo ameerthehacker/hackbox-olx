@@ -9,16 +9,20 @@ import { Broadcaster } from '../../services/broadcaster/broadcaster';
 export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
-    './modules/welcome.js': `function welcome() { 
+    './modules/welcome.js': `function welcome(message) { 
   document
     .getElementById('output')
-    .innerHTML='<h1>Hello world from Hackbox!!!</h1>';   
+    .innerHTML='<h1>' + message + '!!!</h1>';   
 }
 
 export { welcome as something };`,
     './index.js': `import { something as hello } from './modules/welcome.js';
 
-hello();`
+hello('Hello World from hackbox');
+
+//setTimeout(() => {
+//  hello('It works');
+//}, 2000)`
   };
   const broadcaster = Broadcaster.getInstance();
 
