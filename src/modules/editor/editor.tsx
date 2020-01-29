@@ -20,16 +20,17 @@ export default function Editor(props: EditorProps): ReactElement {
   return (
     <Box borderTopWidth="2px" width="100%">
       <MonacoEditor
-        editorDidMount={onEditorMounted}
-        loading={<Loading />}
-        {...props}
         options={{
           fontSize: 20,
           minimap: {
             enabled: false
           },
+          wordWrap: 'on',
           selectOnLineNumbers: true
         }}
+        {...props}
+        editorDidMount={onEditorMounted}
+        loading={<Loading />}
         height="calc(100vh - 55px)"
         theme={colorMode}
       />
