@@ -245,6 +245,8 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
 }
 
 export async function run(fs: FS, entryFile: string): Promise<void> {
+  // clear the cache
+  CodeCache.getInstance().reset();
   const entryFileMetaData = getFileMetaData(entryFile);
   // build all the executable modules
   const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);

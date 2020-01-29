@@ -8,10 +8,12 @@ import { FS } from '../../services/fs/fs';
 export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
-    './modules/sub/welcome.js': `function welcome() { console.info('hello from renamed exports modules') }
+    './modules/welcome.js': `function welcome() { 
+  document.getElementById('root').innerHTML='hello world';   
+}
 
 export { welcome as something };`,
-    './index.js': `import { something as hello } from './welcome.js';
+    './index.js': `import { something as hello } from './modules/welcome.js';
 
 hello();`
   };

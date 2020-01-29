@@ -10,6 +10,7 @@ import EmptyState from './components/empty-state/empty-state';
 export default function Hackbox(): ReactElement {
   const fs = useContext(FSContext);
   const [code, setCode] = useState<string | null>(null);
+  const bc = new BroadcastChannel('PREVIEW');
 
   if (fs === undefined) {
     throw new Error('file system not provided');
@@ -18,10 +19,17 @@ export default function Hackbox(): ReactElement {
   const [selectedFile] = useSelectedFile();
 
   if (selectedFile !== undefined && !fs.isDirectory(selectedFile)) {
-    // dirty
     fs.readFile(selectedFile).then((fileContent) => {
       setCode(fileContent);
     });
+  }
+
+  function onSave(newCode: string) {
+    if (selectedFile !== undefined) {
+      fs?.writeFile(selectedFile, newCode).then(() => {
+        bc.postMessage(fs.exportToJSON());
+      });
+    }
   }
 
   return (
@@ -30,7 +38,7 @@ export default function Hackbox(): ReactElement {
       <SideBar>
         <>
           {code !== null ? (
-            <Editor language="javascript" value={code} />
+            <Editor onSave={onSave} language="javascript" value={code} />
           ) : (
             <EmptyState />
           )}

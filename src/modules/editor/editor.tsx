@@ -1,14 +1,15 @@
-import React, { ReactElement, useRef } from 'react';
+import React, { ReactElement, useRef, KeyboardEvent } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useColorMode, Box } from '@chakra-ui/core';
 import Loading from './components/loading/loading';
 import { editor } from 'monaco-editor';
 
 interface EditorProps {
-  [key: string]: string | number;
+  [key: string]: string | number | Function | undefined;
+  onSave?: (newValue: string) => void;
 }
 
-export default function Editor(props: EditorProps): ReactElement {
+export default function Editor({ onSave, ...rest }: EditorProps): ReactElement {
   type IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
   const { colorMode } = useColorMode();
   const editorRef = useRef<IStandaloneCodeEditor>();
@@ -17,8 +18,18 @@ export default function Editor(props: EditorProps): ReactElement {
     editorRef.current = editor;
   }
 
+  function onKeyDown(evt: KeyboardEvent) {
+    if ((evt.metaKey || evt.ctrlKey) && evt.key === 's') {
+      evt.preventDefault();
+
+      if (editorRef.current !== undefined && onSave !== undefined) {
+        onSave(editorRef.current.getValue());
+      }
+    }
+  }
+
   return (
-    <Box borderTopWidth="2px" width="100%">
+    <Box onKeyDown={onKeyDown} borderTopWidth="2px" width="100%">
       <MonacoEditor
         options={{
           fontSize: 20,
@@ -28,7 +39,7 @@ export default function Editor(props: EditorProps): ReactElement {
           wordWrap: 'on',
           selectOnLineNumbers: true
         }}
-        {...props}
+        {...rest}
         editorDidMount={onEditorMounted}
         loading={<Loading />}
         height="calc(100vh - 55px)"

@@ -24,6 +24,10 @@ export class FS {
     return this.vol.toJSON();
   }
 
+  async writeFile(filename: string, content: string): Promise<void> {
+    await this.vol.writeFileSync(filename, content);
+  }
+
   getBasePath(path: string): string {
     if (!this.isDirectory(path)) {
       const pathArr = path.split('/');
@@ -37,7 +41,7 @@ export class FS {
   }
 
   async mkdir(dirname: string): Promise<void> {
-    return await this.vol.mkdirSync(dirname);
+    await this.vol.mkdirSync(dirname);
   }
 
   async createFile(filename: string): Promise<void> {
@@ -45,7 +49,7 @@ export class FS {
       throw new Error(`file already exists`);
     }
 
-    return await this.vol.writeFileSync(filename, '');
+    await this.vol.writeFileSync(filename, '');
   }
 
   async readFile(filePath: string): Promise<string> {
