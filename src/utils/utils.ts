@@ -1,4 +1,4 @@
-import { FileMetaData } from '../bundler/contracts/file-meta-data';
+import { ModuleMetaData } from '../bundler/contracts/module-meta-data';
 
 export function getFileExt(fileName: string): string {
   const fileNameArr = fileName.split('.');
@@ -42,19 +42,31 @@ export function getCanocialName(filePath: string): string {
   return canocialName;
 }
 
-export function getFileMetaData(filePath: string): FileMetaData {
-  const canocialName = getCanocialName(filePath);
-  const fileName = getFileName(filePath);
-  const ext = getFileExt(fileName);
+export function isLocalModule(filePath: string): boolean {
+  return filePath.startsWith('./');
+}
 
-  return {
-    canocialName,
-    fileName,
-    ext,
-    path: filePath,
-    deps: [],
-    exports: {
-      ___default: ''
-    }
-  };
+export function getModuleMetaData(filePath: string): ModuleMetaData {
+  const canocialName = getCanocialName(filePath);
+
+  if (isLocalModule(filePath)) {
+    const fileName = getFileName(filePath);
+    const ext = getFileExt(fileName);
+
+    return {
+      canocialName,
+      fileName,
+      ext,
+      isLocalModule: true,
+      path: filePath,
+      deps: []
+    };
+  } else {
+    return {
+      canocialName,
+      isLocalModule: false,
+      path: '',
+      deps: []
+    };
+  }
 }

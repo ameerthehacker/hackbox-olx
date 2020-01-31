@@ -3,9 +3,10 @@ import {
   getFileNameWithoutExt,
   getFileExt,
   getFileName,
-  getFileMetaData
+  getModuleMetaData,
+  isLocalModule
 } from './utils';
-import { FileMetaData } from '../bundler/contracts/file-meta-data';
+import { ModuleMetaData } from '../bundler/contracts/module-meta-data';
 
 describe('utils', () => {
   describe('getCanocialName()', () => {
@@ -48,11 +49,11 @@ describe('utils', () => {
     });
   });
 
-  describe('getFileMetaData', () => {
-    it('should return the file metdata like filename, ext, canocial name', () => {
+  describe('getModuleMetaData', () => {
+    it('should return the module metadata with isLocal=true for local dependency', () => {
       const filePath = './modules/sub-modules/index.js';
 
-      const fileMetaData: FileMetaData = getFileMetaData(filePath);
+      const fileMetaData: ModuleMetaData = getModuleMetaData(filePath);
 
       expect(fileMetaData).toEqual({
         ext: 'js',
@@ -60,10 +61,35 @@ describe('utils', () => {
         fileName: 'index.js',
         path: filePath,
         deps: [],
-        exports: {
-          ___default: ''
-        }
+        isLocalModule: true
       });
+    });
+
+    it('should return the module metadata with isLocal=false for external dependency', () => {
+      const filePath = 'lodash';
+
+      const fileMetaData: ModuleMetaData = getModuleMetaData(filePath);
+
+      expect(fileMetaData).toEqual({
+        canocialName: '_LODASH',
+        path: '',
+        deps: [],
+        isLocalModule: false
+      });
+    });
+  });
+
+  describe('isLocalModule()', () => {
+    it('should identify external module', () => {
+      const module = 'react';
+
+      expect(isLocalModule(module)).toBeFalsy();
+    });
+
+    it('should identify local dependency', () => {
+      const module = './local.js';
+
+      expect(isLocalModule(module)).toBeTruthy();
     });
   });
 });

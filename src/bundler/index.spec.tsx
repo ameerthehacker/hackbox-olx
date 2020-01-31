@@ -1,17 +1,17 @@
 import { transform } from '@babel/standalone';
 import { babelPlugin, buildExecutableModules, run } from './index';
-import { FileMetaData } from './contracts/file-meta-data';
-import { getFileMetaData } from '../utils/utils';
+import { ModuleMetaData } from './contracts/module-meta-data';
+import { getModuleMetaData } from '../utils/utils';
 import { FS } from '../services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 
-let someFileMetaData: FileMetaData;
+let someFileMetaData: ModuleMetaData;
 // This is added by babel at the top when we transpile to es5
 const useStrict = '"use strict";\n\n';
 
 describe('Babel plugin', () => {
   beforeEach(() => {
-    someFileMetaData = getFileMetaData('./hello.js');
+    someFileMetaData = getModuleMetaData('./hello.js');
     jest.resetAllMocks();
   });
 
@@ -70,8 +70,8 @@ describe('Babel plugin', () => {
     });
 
     expect(someFileMetaData.deps).toEqual([
-      getFileMetaData('./modules/dep1'),
-      getFileMetaData('./modules/dep2')
+      getModuleMetaData('./modules/dep1'),
+      getModuleMetaData('./modules/dep2')
     ]);
   });
 
@@ -130,7 +130,7 @@ describe('buildExecutableModule()', () => {
     };
     const fs = new FS(files);
     const module = (
-      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();
@@ -146,7 +146,7 @@ describe('buildExecutableModule()', () => {
     };
     const fs = new FS(files);
     const module = (
-      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();
@@ -167,7 +167,7 @@ describe('buildExecutableModule()', () => {
     const cache = CodeCache.getInstance();
     const fs = new FS(files);
     const entryModule = (
-      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();

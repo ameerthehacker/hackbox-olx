@@ -1,5 +1,5 @@
-import { getFileMetaData } from '../utils/utils';
-import { FileMetaData } from './contracts/file-meta-data';
+import { getModuleMetaData } from '../utils/utils';
+import { ModuleMetaData } from './contracts/module-meta-data';
 import { FS } from '../services/fs/fs';
 import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache/code-cache';
@@ -8,13 +8,13 @@ import { ExportsMetaData } from './contracts/exports-meta-data';
 
 const cache = CodeCache.getInstance();
 
-export function babelPlugin(fileMetaData: FileMetaData): () => object {
+export function babelPlugin(fileMetaData: ModuleMetaData): () => object {
   return (): object => ({
     visitor: {
       /* eslint-disable @typescript-eslint/no-explicit-any */
       ImportDeclaration(path: any): void {
-        const depMetaData = getFileMetaData(path.node.source.value);
-        fileMetaData.deps.push(depMetaData);
+        const depMetaData = getModuleMetaData(path.node.source.value);
+        fileMetaData.deps?.push(depMetaData);
 
         // check if there are any default imports
         const defaultImport = path.node.specifiers.find(
@@ -63,6 +63,12 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
         path.remove();
       },
       ExportDefaultDeclaration(path: any): void {
+        if (fileMetaData.exports === undefined) {
+          fileMetaData.exports = {
+            ___default: ''
+          };
+        }
+
         fileMetaData.exports.___default = path.node.declaration.name;
         /*
         function hello() {
@@ -80,6 +86,11 @@ export function babelPlugin(fileMetaData: FileMetaData): () => object {
         path.remove();
       },
       ExportNamedDeclaration(path: any): void {
+        if (fileMetaData.exports === undefined) {
+          fileMetaData.exports = {
+            ___default: ''
+          };
+        }
         // check if there are any named exports and transform them
         const namedExports = path.node.specifiers.filter(
           (specifier: { type: string }) => specifier.type === 'ExportSpecifier'
@@ -133,7 +144,7 @@ function module(_HELLO) {
 }
 */
 export async function buildExecutableModules(
-  fileMetaData: FileMetaData,
+  fileMetaData: ModuleMetaData,
   fs: FS
 ): Promise<ModuleDef> {
   let fileContent = '';
@@ -247,7 +258,7 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
 export async function run(fs: FS, entryFile: string): Promise<void> {
   // clear the cache
   CodeCache.getInstance().reset();
-  const entryFileMetaData = getFileMetaData(entryFile);
+  const entryFileMetaData = getModuleMetaData(entryFile);
   // build all the executable modules
   const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);
   // now all the transformed files are in the cache and we can run the entry module
