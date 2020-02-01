@@ -144,99 +144,116 @@ function module(_HELLO) {
 }
 */
 export async function buildExecutableModules(
-  fileMetaData: ModuleMetaData,
+  moduleMetaData: ModuleMetaData,
   fs: FS
 ): Promise<ModuleDef> {
-  let fileContent = '';
+  // check if it is local module like ./module.js
+  if (moduleMetaData.isLocalModule) {
+    let fileContent = '';
 
-  try {
-    fileContent = await fs.readFile(fileMetaData.path);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      throw new Error(`module ${fileMetaData.path} does not exists`);
-    } else {
-      throw err;
+    try {
+      fileContent = await fs.readFile(moduleMetaData.path);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        throw new Error(`module ${moduleMetaData.path} does not exists`);
+      } else {
+        throw err;
+      }
     }
-  }
 
-  let transformedCode = (transform(fileContent, {
-    presets: ['es2015'],
-    plugins: [babelPlugin(fileMetaData)]
-  }) as any).code;
+    let transformedCode = (transform(fileContent, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(moduleMetaData)]
+    }) as any).code;
 
-  /*
-  _HELLO.___default();
-
-  function hello() { console.log('hello world'); }
-
-  export default hello;
-  ==============================
-  above code is transformed into
-  ==============================
-  _HELLO.___default();
-
-  function hello() { console.log('hello world'); }
-  
-  return {
-    ___default: hello
-  }
-  */
-  const exports = [];
-
-  for (const exportKey in fileMetaData.exports) {
-    const exportedRef = fileMetaData.exports[exportKey];
-
-    if (exportedRef && exportedRef.trim().length > 0) {
-      exports.push(`${exportKey}: ${fileMetaData.exports[exportKey]}`);
-    }
-  }
-  const returnValue = `{${exports.join(',')}}`;
-  /*
-    return {
-      ___default: hello
-    }
-  */
-  transformedCode += `;return ${returnValue};`;
-
-  /*
-  _HELLO.___default();
-
-  function hello() { console.log('hello world'); }
-  
-  return {
-    ___default: hello
-  }
-  ==============================
-  above code is transformed into
-  ==============================
-  function(_HELLO) {
+    /*
     _HELLO.___default();
-
+  
     function hello() { console.log('hello world'); }
   
+    export default hello;
+    ==============================
+    above code is transformed into
+    ==============================
+    _HELLO.___default();
+  
+    function hello() { console.log('hello world'); }
+    
     return {
       ___default: hello
     }
-  }
-  */
-  // build the executable modules of all the dependencies first
-  for (const dep of fileMetaData.deps) {
-    // check if the module is already built or not
-    if (!cache.get(dep.canocialName)) {
-      // transform that dependency and cache it
-      await buildExecutableModules(dep, fs);
+    */
+    const exports = [];
+
+    for (const exportKey in moduleMetaData.exports) {
+      const exportedRef = moduleMetaData.exports[exportKey];
+
+      if (exportedRef && exportedRef.trim().length > 0) {
+        exports.push(`${exportKey}: ${moduleMetaData.exports[exportKey]}`);
+      }
     }
+    const returnValue = `{${exports.join(',')}}`;
+    /*
+      return {
+        ___default: hello
+      }
+    */
+    transformedCode += `;return ${returnValue};`;
+
+    /*
+    _HELLO.___default();
+  
+    function hello() { console.log('hello world'); }
+    
+    return {
+      ___default: hello
+    }
+    ==============================
+    above code is transformed into
+    ==============================
+    function(_HELLO) {
+      _HELLO.___default();
+  
+      function hello() { console.log('hello world'); }
+    
+      return {
+        ___default: hello
+      }
+    }
+    */
+    // build the executable modules of all the dependencies first
+    for (const dep of moduleMetaData.deps) {
+      // check if the module is already built or not
+      if (!cache.get(dep.canocialName)) {
+        // transform that dependency and cache it
+        await buildExecutableModules(dep, fs);
+      }
+    }
+
+    const depArgs = moduleMetaData.deps.map((dep) => dep.canocialName);
+    const moduleDef: ModuleDef = {
+      module: new Function(...depArgs, transformedCode),
+      deps: depArgs
+    };
+    // add module to the code cache
+    cache.set(moduleMetaData.canocialName, moduleDef);
+
+    return moduleDef;
+  } else {
+    // it is an external module like lodash
+    const externalModule = await import(
+      /* webpackIgnore: true */ `https://unsafe-production.jspm.io/${moduleMetaData.path}`
+    );
+
+    const module = (): object => ({
+      ___default: { ...externalModule.default }
+    });
+
+    return {
+      module,
+      deps: []
+    };
   }
-
-  const depArgs = fileMetaData.deps.map((dep) => dep.canocialName);
-  const moduleDef: ModuleDef = {
-    module: new Function(...depArgs, transformedCode),
-    deps: depArgs
-  };
-  // add module to the code cache
-  cache.set(fileMetaData.canocialName, moduleDef);
-
-  return moduleDef;
 }
 
 export function runModule(moduleDef: ModuleDef): ExportsMetaData {

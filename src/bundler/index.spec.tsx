@@ -181,6 +181,24 @@ describe('buildExecutableModule()', () => {
 
     expect(console.info).toHaveBeenCalledWith('hello from dep injection');
   });
+
+  it('should return the external module function as dynamic import', async () => {
+    const moduleMetaData: ModuleMetaData = {
+      canocialName: 'LODASH',
+      deps: [],
+      path: 'lodash',
+      isLocalModule: false
+    };
+
+    const moduleDef = await buildExecutableModules(moduleMetaData, new FS({}));
+
+    // getting lodash default export
+    const _ = moduleDef.module().___default;
+    // test a very simple lodash function
+    const firstElement = _.first(['ameer', 'jhan']);
+
+    expect(firstElement).toBe('ameer');
+  });
 });
 
 describe('runModule', () => {
@@ -270,5 +288,18 @@ describe('runModule', () => {
     } catch (err) {
       expect(err).toEqual(new Error(`module ./welcome.js does not exists`));
     }
+  });
+
+  it('should run with external dependency', async () => {
+    const files = {
+      './index.js': `import _ from 'lodash-es';
+      console.info(_.first(['ameer', 'jhan']));`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './index.js');
+
+    expect(console.info).toHaveBeenCalledWith('ameer');
   });
 });

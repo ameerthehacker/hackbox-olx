@@ -65,7 +65,7 @@ export function getModuleMetaData(filePath: string): ModuleMetaData {
     return {
       canocialName,
       isLocalModule: false,
-      path: '',
+      path: filePath,
       deps: []
     };
   }

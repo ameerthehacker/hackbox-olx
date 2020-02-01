@@ -72,7 +72,7 @@ describe('utils', () => {
 
       expect(fileMetaData).toEqual({
         canocialName: '_LODASH',
-        path: '',
+        path: filePath,
         deps: [],
         isLocalModule: false
       });
