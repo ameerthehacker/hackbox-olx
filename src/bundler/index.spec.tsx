@@ -19,7 +19,21 @@ describe('Babel plugin', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `${useStrict}_WELCOME.___default();`;
+    const expectedTransformedCode = `${useStrict}var welcome$ = WELCOME.___default;
+welcome$();`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(expectedTransformedCode);
+  });
+
+  it('it should replace the import by variable declaration', () => {
+    const someFileMetaData = getModuleMetaData('./hello.js');
+    const code = `import counter from './counter.js'`;
+    const expectedTransformedCode = `${useStrict}var counter$ = COUNTER.___default;`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -33,7 +47,8 @@ describe('Babel plugin', () => {
     const code = `import { welcome } from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `${useStrict}_WELCOME.welcome();`;
+    const expectedTransformedCode = `${useStrict}var welcome$ = WELCOME.welcome;
+welcome$();`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -47,7 +62,8 @@ describe('Babel plugin', () => {
     const code = `import { welcome as something } from './welcome';
     something();
     `;
-    const expectedTransformedCode = `${useStrict}_WELCOME.welcome();`;
+    const expectedTransformedCode = `${useStrict}var something$ = WELCOME.welcome;
+something$();`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -174,30 +190,12 @@ describe('buildExecutableModule()', () => {
     // try running the module with the _WELCOME dependency
     const entryFunc = new Function(
       'entryModule',
-      `entryModule(${cache.get('_WELCOME')?.module}())`
+      `entryModule(${cache.get('WELCOME')?.module}())`
     );
 
     entryFunc(entryModule);
 
     expect(console.info).toHaveBeenCalledWith('hello from dep injection');
-  });
-
-  it('should return the external module function as dynamic import', async () => {
-    const moduleMetaData: ModuleMetaData = {
-      canocialName: 'LODASH',
-      deps: [],
-      path: 'lodash',
-      isLocalModule: false
-    };
-
-    const moduleDef = await buildExecutableModules(moduleMetaData, new FS({}));
-
-    // getting lodash default export
-    const _ = moduleDef.module().___default;
-    // test a very simple lodash function
-    const firstElement = _.first(['ameer', 'jhan']);
-
-    expect(firstElement).toBe('ameer');
   });
 });
 
@@ -274,32 +272,5 @@ describe('runModule', () => {
     expect(console.info).toHaveBeenCalledWith(
       'hello from renamed exports modules'
     );
-  });
-
-  it('should throw error when module is not found', async () => {
-    const files = {
-      './hello.js': `import { something as hello } from './welcome.js';
-      hello();`
-    };
-    const fs = new FS(files);
-
-    try {
-      await run(fs, './hello.js');
-    } catch (err) {
-      expect(err).toEqual(new Error(`module ./welcome.js does not exists`));
-    }
-  });
-
-  it('should run with external dependency', async () => {
-    const files = {
-      './index.js': `import _ from 'lodash-es';
-      console.info(_.first(['ameer', 'jhan']));`
-    };
-    const fs = new FS(files);
-
-    console.info = jest.fn();
-    await run(fs, './index.js');
-
-    expect(console.info).toHaveBeenCalledWith('ameer');
   });
 });

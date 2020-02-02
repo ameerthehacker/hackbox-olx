@@ -23,8 +23,7 @@ export function getFileNameWithoutExt(fileName: string): string {
 
 // TODO: take cwd path into account to find correct canocial name
 export function getCanocialName(filePath: string): string {
-  const filePathArr = filePath.split('/');
-  let canocialName = '';
+  let filePathArr = filePath.split('/');
 
   // ./main.js => ['.', 'main.js'] => ['main.js']
   if (filePathArr[0] === '.') {
@@ -35,10 +34,12 @@ export function getCanocialName(filePath: string): string {
     filePathArr[filePathArr.length - 1]
   );
 
-  for (const filePath of filePathArr) {
-    // nav-bar -> NAV__BAR
-    canocialName += `_${filePath.replace('-', '__').toUpperCase()}`;
-  }
+  // nav-bar -> NAV__BAR
+  filePathArr = filePathArr.map((filePath) =>
+    filePath.replace('-', '__').toUpperCase()
+  );
+
+  const canocialName = filePathArr.join('_');
 
   return canocialName;
 }

@@ -15,7 +15,7 @@ describe('utils', () => {
 
       const canocialName = getCanocialName(fileName);
 
-      expect(canocialName).toBe('_COMPONENTS_NAV__BAR');
+      expect(canocialName).toBe('COMPONENTS_NAV__BAR');
     });
   });
 
@@ -57,7 +57,7 @@ describe('utils', () => {
 
       expect(fileMetaData).toEqual({
         ext: 'js',
-        canocialName: '_MODULES_SUB__MODULES_INDEX',
+        canocialName: 'MODULES_SUB__MODULES_INDEX',
         fileName: 'index.js',
         path: filePath,
         deps: [],
@@ -71,7 +71,7 @@ describe('utils', () => {
       const fileMetaData: ModuleMetaData = getModuleMetaData(filePath);
 
       expect(fileMetaData).toEqual({
-        canocialName: '_LODASH',
+        canocialName: 'LODASH',
         path: filePath,
         deps: [],
         isLocalModule: false

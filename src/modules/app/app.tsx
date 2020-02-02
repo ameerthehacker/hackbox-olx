@@ -9,22 +9,26 @@ import { Broadcaster } from '../../services/broadcaster/broadcaster';
 export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
-    './modules/welcome.js': `function welcome(message) { 
-  document
-    .getElementById('output')
-    .innerHTML='<h1>' + message + '!!!</h1>';   
+    './components/counter.js': `import React, { useState } from 'react';
+function Counter() { 
+  const [count, setCount] = useState();
+
+  return (
+    <>
+      <div>{count}</div>
+      <button>+</button><button>-</button>
+    </>
+  );
 }
 
-export { welcome as something };`,
-    './index.js': `import { something as hello } from './modules/welcome.js';
-import { concat } from 'lodash-es';
+export default Counter;`,
+    './index.js': `import React from 'react';
+import ReactDOM from 'react-dom';  
+import Counter from './components/counter.js'
 
-hello('concatination from lodash ' + concat(1, 2));
-
-//setTimeout(() => {
-//  hello('It works');
-//}, 2000)`
+ReactDOM.render(<Counter />, document.getElementById('output'));`
   };
+
   const broadcaster = Broadcaster.getInstance();
 
   broadcaster.listen('PREVIEW_READY', () => {
