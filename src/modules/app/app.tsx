@@ -17,8 +17,9 @@ export default function App(): ReactElement {
 
 export { welcome as something };`,
     './index.js': `import { something as hello } from './modules/welcome.js';
+import { concat } from 'lodash-es';
 
-hello('Hello World from hackbox');
+hello('concatination from lodash ' + concat(1, 2));
 
 //setTimeout(() => {
 //  hello('It works');
