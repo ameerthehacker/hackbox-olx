@@ -11,11 +11,11 @@ import { ModuleMetaData } from '../bundler/contracts/module-meta-data';
 describe('utils', () => {
   describe('getCanocialName()', () => {
     it('should give the right canocial name', () => {
-      const fileName = './components/navbar.js';
+      const fileName = './components/nav-bar.js';
 
       const canocialName = getCanocialName(fileName);
 
-      expect(canocialName).toBe('_COMPONENTS_NAVBAR');
+      expect(canocialName).toBe('_COMPONENTS_NAV__BAR');
     });
   });
 
@@ -57,7 +57,7 @@ describe('utils', () => {
 
       expect(fileMetaData).toEqual({
         ext: 'js',
-        canocialName: '_MODULES_SUB-MODULES_INDEX',
+        canocialName: '_MODULES_SUB__MODULES_INDEX',
         fileName: 'index.js',
         path: filePath,
         deps: [],

@@ -36,7 +36,8 @@ export function getCanocialName(filePath: string): string {
   );
 
   for (const filePath of filePathArr) {
-    canocialName += `_${filePath.toUpperCase()}`;
+    // nav-bar -> NAV__BAR
+    canocialName += `_${filePath.replace('-', '__').toUpperCase()}`;
   }
 
   return canocialName;

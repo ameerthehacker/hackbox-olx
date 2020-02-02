@@ -246,13 +246,17 @@ export async function buildExecutableModules(
     );
 
     const module = (): object => ({
-      ___default: { ...externalModule.default }
+      ___default: externalModule.default,
+      ...externalModule.default
     });
-
-    return {
+    const moduleDef: ModuleDef = {
       module,
       deps: []
     };
+
+    cache.set(moduleMetaData.canocialName, moduleDef);
+
+    return moduleDef;
   }
 }
 
