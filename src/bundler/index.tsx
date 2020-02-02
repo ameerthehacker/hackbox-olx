@@ -14,7 +14,7 @@ interface BabelTypes {
 
 export function babelPlugin(
   fileMetaData: ModuleMetaData
-): ({ types: babelTypes }: { types: BabelTypes }) => object {
+): ({ types }: { types: BabelTypes }) => object {
   return ({ types }): object => {
     return {
       visitor: {
@@ -36,7 +36,9 @@ export function babelPlugin(
           ==============================
           above code is transformed into
           ==============================
-          _HELLO.___default();
+          var hello$ = HELLO.___default;
+          
+          hello$();
           */
           if (defaultImport) {
             const localVariableName = `${defaultImport.local.name}$`;
@@ -61,7 +63,9 @@ export function babelPlugin(
           ==============================
           above code is transformed into
           ==============================
-          _HELLO.hello();
+          var something$ = HELLO.hello;
+
+          something$();
           */
           for (const namedImport of namedImports) {
             // namedImport.local.name => something
@@ -153,8 +157,8 @@ export default myHello;
 ==============================
 above code is transformed into
 ==============================
-function module(_HELLO) {
-  _HELLO.___default();
+function module(HELLO) {
+  var hello$ = HELLO.___default();
 
   function myHello() { console.log('my hello func') }
 
@@ -187,7 +191,7 @@ export async function buildExecutableModules(
     }) as any).code;
 
     /*
-    _HELLO.___default();
+    var hello$ = HELLO.___default();
   
     function hello() { console.log('hello world'); }
   
@@ -195,7 +199,7 @@ export async function buildExecutableModules(
     ==============================
     above code is transformed into
     ==============================
-    _HELLO.___default();
+    var hello$ = HELLO.___default();
   
     function hello() { console.log('hello world'); }
     
@@ -221,7 +225,7 @@ export async function buildExecutableModules(
     transformedCode += `;return ${returnValue};`;
 
     /*
-    _HELLO.___default();
+    var hello$ = HELLO.___default();
   
     function hello() { console.log('hello world'); }
     
@@ -231,8 +235,8 @@ export async function buildExecutableModules(
     ==============================
     above code is transformed into
     ==============================
-    function(_HELLO) {
-      _HELLO.___default();
+    function(HELLO) {
+      var hello$ = HELLO.___default();
   
       function hello() { console.log('hello world'); }
     

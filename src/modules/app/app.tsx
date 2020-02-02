@@ -10,6 +10,7 @@ export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
     './components/counter.js': `import React, { useState } from 'react';
+
 function Counter() { 
   const [count, setCount] = useState(0);
 
@@ -23,7 +24,7 @@ function Counter() {
 
   return (
     <>
-      <div>{count}</div>
+      <h1>{count}</h1>
       <button onClick={increment}>+</button>
       <button onClick={decrement}>-</button>
     </>
