@@ -11,12 +11,21 @@ export default function App(): ReactElement {
   const DEV_FILES = {
     './components/counter.js': `import React, { useState } from 'react';
 function Counter() { 
-  const [count, setCount] = useState();
+  const [count, setCount] = useState(0);
+
+  function increment() {
+    setCount(count => count + 1);
+  }
+
+  function decrement() {
+    setCount(count => count - 1);
+  }
 
   return (
     <>
       <div>{count}</div>
-      <button>+</button><button>-</button>
+      <button onClick={increment}>+</button>
+      <button onClick={decrement}>-</button>
     </>
   );
 }
@@ -24,7 +33,7 @@ function Counter() {
 export default Counter;`,
     './index.js': `import React from 'react';
 import ReactDOM from 'react-dom';  
-import Counter from './components/counter.js'
+import Counter from './components/counter.js';
 
 ReactDOM.render(<Counter />, document.getElementById('output'));`
   };
