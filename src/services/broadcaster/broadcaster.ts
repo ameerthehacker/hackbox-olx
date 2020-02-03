@@ -13,7 +13,6 @@ export class Broadcaster {
     return this.instance;
   }
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   public broadcast(event: EVENTS, message: any): void {
     this.bc.postMessage({
       type: event,

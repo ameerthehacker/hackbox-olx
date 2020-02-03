@@ -108,10 +108,37 @@ something$();`;
     });
   });
 
+  it('should return the inline default export function', () => {
+    const code = `export default function someName() { console.log('ha ha') }`;
+
+    transform(code, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(someFileMetaData)]
+    });
+
+    expect(someFileMetaData.exports).toEqual({
+      ___default: '_defaultExportFunc'
+    });
+  });
+
   it('should remove default exports', () => {
     const code = `const counter = 10;
     export default counter;`;
     const expectedTransformedCode = `${useStrict}var counter = 10;`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(expectedTransformedCode);
+  });
+
+  it('should handle the anonymous default exports', () => {
+    const code = `export default function someName() { console.log('ha ha') }`;
+    const expectedTransformedCode = `${useStrict}var _defaultExportFunc = function someName() {
+  console.log('ha ha');
+};`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],

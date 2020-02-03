@@ -1,15 +1,40 @@
 import { getModuleMetaData } from '../utils/utils';
-import { ModuleMetaData } from './contracts/module-meta-data';
 import { FS } from '../services/fs/fs';
 import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache/code-cache';
-import { ModuleDef } from './contracts/module-def';
-import { ExportsMetaData } from './contracts/exports-meta-data';
 
 const cache = CodeCache.getInstance();
 
-interface BabelTypes {
+// TODO: these typing are fucking useless make them better
+export interface BabelTypes {
   identifier: (id: string) => object;
+  functionExpression: (
+    id: any,
+    params: any,
+    body: any,
+    generator: any,
+    async: any
+  ) => object;
+}
+
+export interface ModuleDef {
+  module: Function;
+  deps: string[];
+}
+
+export interface ModuleMetaData {
+  canocialName: string;
+  fileName?: string;
+  ext?: string;
+  path: string;
+  deps: ModuleMetaData[];
+  isLocalModule?: boolean;
+  exports?: ExportsMetaData;
+}
+
+export interface ExportsMetaData {
+  [name: string]: string;
+  ___default: string;
 }
 
 export function babelPlugin(
@@ -18,7 +43,6 @@ export function babelPlugin(
   return ({ types }): object => {
     return {
       visitor: {
-        /* eslint-disable @typescript-eslint/no-explicit-any */
         ImportDeclaration(path: any): void {
           const depMetaData = getModuleMetaData(path.node.source.value);
           fileMetaData.deps?.push(depMetaData);
@@ -91,7 +115,26 @@ export function babelPlugin(
             };
           }
 
-          fileMetaData.exports.___default = path.node.declaration.name;
+          const declaration = path.node.declaration;
+
+          if (declaration.type === 'Identifier') {
+            fileMetaData.exports.___default = path.node.declaration.name;
+          } else if (declaration.type === 'FunctionDeclaration') {
+            const uid = path.scope.generateUidIdentifier('defaultExportFunc');
+
+            path.scope.push({
+              id: uid,
+              init: types.functionExpression(
+                declaration.id,
+                declaration.params,
+                declaration.body,
+                declaration.generator,
+                declaration.async
+              )
+            });
+
+            fileMetaData.exports.___default = uid.name;
+          }
           /*
           function hello() {
             console.log('hello world');

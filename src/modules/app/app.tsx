@@ -11,7 +11,7 @@ export default function App(): ReactElement {
   const DEV_FILES = {
     './components/counter.js': `import React, { useState } from 'react';
 
-function Counter() { 
+export default function Counter() { 
   const [count, setCount] = useState(0);
 
   function increment() {
@@ -30,13 +30,13 @@ function Counter() {
     </>
   );
 }
-
-export default Counter;`,
+`,
     './index.js': `import React from 'react';
 import ReactDOM from 'react-dom';  
 import Counter from './components/counter.js';
 
-ReactDOM.render(<Counter />, document.getElementById('output'));`
+ReactDOM.render(<Counter />, document.getElementById('output'));
+`
   };
 
   const broadcaster = Broadcaster.getInstance();

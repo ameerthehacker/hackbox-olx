@@ -1,4 +1,4 @@
-import { ModuleMetaData } from '../bundler/contracts/module-meta-data';
+import { ModuleMetaData } from '../bundler';
 
 export function getFileExt(fileName: string): string {
   const fileNameArr = fileName.split('.');
