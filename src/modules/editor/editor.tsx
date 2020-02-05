@@ -33,7 +33,7 @@ export default function Editor({
   }
 
   return (
-    <Box onKeyDown={onKeyDown} borderTopWidth="2px" width="100%">
+    <Box onKeyDown={onKeyDown} borderTopWidth="2px">
       <MonacoEditor
         options={{
           fontSize: 20,

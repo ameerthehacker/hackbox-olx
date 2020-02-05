@@ -8,6 +8,7 @@ import { IconType } from 'react-icons/lib/cjs';
 import FileExplorer from './components/file-explorer/file-explorer';
 import Settings from './components/settings/settings';
 import { FSContext } from '../../contexts/fs';
+import SplitPane from 'react-split-pane';
 
 interface SideBarSection {
   icon: IconType;
@@ -64,16 +65,26 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
           </Box>
         ))}
       </Box>
-      <Box
-        bg={bgColor}
-        color={color}
-        borderRightWidth="1px"
-        width="350px"
-        id="sidebar-section"
+      <SplitPane
+        minSize="120"
+        style={{
+          height: 'calc(100vh - 55px)',
+          marginTop: '2px',
+          marginLeft: '65px'
+        }}
+        defaultSize={200}
       >
-        {/* portal for the side bar section */}
-      </Box>
-      {children}
+        <Box
+          bg={bgColor}
+          color={color}
+          borderRightWidth="1px"
+          height="100%"
+          id="sidebar-section"
+        >
+          {/* portal for the side bar section */}
+        </Box>
+        <Box>{children}</Box>
+      </SplitPane>
     </Flex>
   );
 }

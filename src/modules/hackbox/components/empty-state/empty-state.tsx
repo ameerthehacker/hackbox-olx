@@ -13,6 +13,7 @@ export default function EmptyState(): ReactElement {
       bg={bgColor}
       color={color}
       width="100%"
+      height="100%"
     >
       <Stack spacing={2}>
         <Box>
