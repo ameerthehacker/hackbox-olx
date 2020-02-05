@@ -68,7 +68,7 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
       <SplitPane
         minSize="120"
         style={{
-          height: 'calc(100vh - 55px)',
+          height: 'calc(100vh - 57px)',
           marginTop: '2px',
           marginLeft: '65px'
         }}

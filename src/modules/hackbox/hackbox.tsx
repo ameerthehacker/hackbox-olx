@@ -43,7 +43,7 @@ export default function Hackbox(): ReactElement {
       <NavBar />
       <SideBar>
         <SplitPane
-          style={{ height: 'calc(100vh - 55px)' }}
+          style={{ height: 'calc(100vh - 57px)' }}
           defaultSize={500}
           primary="second"
         >
