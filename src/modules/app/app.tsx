@@ -10,9 +10,22 @@ export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
     './components/counter.js': `import React, { useState } from 'react';
+import styled from 'styled-components';
 
 export default function Counter() { 
   const [count, setCount] = useState(0);
+
+  const Button = styled.button\`
+    /* Adapt the colors based on primary prop */
+    background: \${props => props.primary ? "palevioletred" : "white"};
+    color: \${props => props.primary ? "white" : "palevioletred"};
+
+    font-size: 1em;
+    margin: 1em;
+    padding: 0.25em 1em;
+    border: 2px solid palevioletred;
+    border-radius: 3px;
+  \`;
 
   function increment() {
     setCount(count => count + 1);
@@ -25,11 +38,11 @@ export default function Counter() {
   return (
     <>
       <h1>{count}</h1>
-      <button onClick={increment}>+</button>
-      <button onClick={decrement}>-</button>
+      <Button onClick={increment} primary>+</Button>
+      <Button onClick={decrement}>-</Button>
     </>
   );
-}
+}    
 `,
     './index.js': `import React from 'react';
 import ReactDOM from 'react-dom';  

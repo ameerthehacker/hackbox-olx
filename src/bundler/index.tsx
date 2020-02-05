@@ -330,7 +330,7 @@ export async function buildExecutableModules(
       }
 
       return {
-        ___default: externalModule.default,
+        ___default: externalModule.default.default || externalModule.default,
         ...externalModule.default
       };
     };
