@@ -65,8 +65,9 @@ const App = (
 ReactDOM.render(App, document.getElementById('output'));
 `,
     './hello.js': `export default function() {
-      alert('this is to test proper caching');
-}`
+  alert('this is to test proper caching');
+}
+`
   };
 
   const broadcaster = Broadcaster.getInstance();
