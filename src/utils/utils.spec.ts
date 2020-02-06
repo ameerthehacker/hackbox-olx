@@ -6,7 +6,7 @@ import {
   getModuleMetaData,
   isLocalModule
 } from './utils';
-import { ModuleMetaData } from '../bundler/contracts/module-meta-data';
+import { ModuleMetaData } from '../bundler';
 
 describe('utils', () => {
   describe('getCanocialName()', () => {
