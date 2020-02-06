@@ -3,7 +3,7 @@ import { Box } from '@chakra-ui/core';
 
 export default function PreviewWindow(): ReactElement {
   return (
-    <Box>
+    <Box height="100%">
       <iframe
         title="hackbox-preview"
         height="100%"
