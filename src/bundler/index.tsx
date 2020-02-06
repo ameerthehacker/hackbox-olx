@@ -1,4 +1,4 @@
-import { getModuleMetaData } from '../utils/utils';
+import { getModuleMetaData, getDirectoryName } from '../utils/utils';
 import { FS } from '../services/fs/fs';
 import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache/code-cache';
@@ -44,7 +44,11 @@ export function babelPlugin(
     return {
       visitor: {
         ImportDeclaration(path: any): void {
-          const depMetaData = getModuleMetaData(path.node.source.value);
+          const containingDirectoryName = getDirectoryName(fileMetaData.path);
+          const depMetaData = getModuleMetaData(
+            path.node.source.value,
+            containingDirectoryName
+          );
           fileMetaData.deps?.push(depMetaData);
 
           // check if there are any default imports

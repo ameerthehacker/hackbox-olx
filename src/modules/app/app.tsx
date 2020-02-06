@@ -11,6 +11,7 @@ export default function App(): ReactElement {
   const DEV_FILES = {
     './components/counter.js': `import React, { useState } from 'react';
 import styled from 'styled-components';
+import hello from '../hello.js';
 
 export default function Counter() { 
   const [count, setCount] = useState(0);
@@ -40,6 +41,9 @@ export default function Counter() {
       <h1>{count}</h1>
       <Button onClick={increment} primary>+</Button>
       <Button onClick={decrement}>-</Button>
+      <div>
+        <button onClick={hello}>Say hello From Counter</button>
+      </div>    
     </>
   );
 }    
@@ -47,9 +51,22 @@ export default function Counter() {
     './index.js': `import React from 'react';
 import ReactDOM from 'react-dom';  
 import Counter from './components/counter.js';
+import hello from './hello.js';
 
-ReactDOM.render(<Counter />, document.getElementById('output'));
-`
+const App = (
+  <>
+    <Counter />
+    <div>
+      <button onClick={hello}>Say hello From App</button>
+    </div>    
+  </>
+);
+
+ReactDOM.render(App, document.getElementById('output'));
+`,
+    './hello.js': `export default function() {
+      alert('this is to test proper caching');
+}`
   };
 
   const broadcaster = Broadcaster.getInstance();

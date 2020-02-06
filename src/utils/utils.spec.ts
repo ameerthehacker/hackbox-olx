@@ -4,7 +4,9 @@ import {
   getFileExt,
   getFileName,
   getModuleMetaData,
-  isLocalModule
+  isLocalModule,
+  getAbsolutePath,
+  getDirectoryName
 } from './utils';
 import { ModuleMetaData } from '../bundler';
 
@@ -17,6 +19,59 @@ describe('utils', () => {
 
       expect(canocialName).toBe('COMPONENTS_NAV__BAR');
     });
+
+    it('should give the same canocial name for different path', () => {
+      /*
+       * Imaginary filesystem
+       * - components
+       *    - navbar.js
+       * - services
+       *    - auth.js
+       */
+      /*
+       * navbar.js
+       * import auth from '../services.auth.js'
+       */
+      const filePath = '../../services/auth.js';
+      const cwd = './components/navbar';
+
+      const expectedCanocialName = 'SERVICES_AUTH';
+
+      expect(getCanocialName(filePath, cwd)).toBe(expectedCanocialName);
+    });
+  });
+
+  describe('getAbsolutePath', () => {
+    /*
+     * Imaginary filesystem
+     * - components
+     *    - navbar.js
+     * - services
+     *    - auth.js
+     */
+    /*
+     * navbar.js
+     * import auth from '../services.auth.js'
+     */
+    it('should return the absolute path correctly', () => {
+      const relativeFilePath = '../../services/auth.js';
+      const cwd = './components/navbar/';
+
+      const absolutePath = './services/auth.js';
+
+      expect(getAbsolutePath(relativeFilePath, cwd)).toBe(absolutePath);
+    });
+
+    it('should throw a not found error with invalid paths', () => {
+      const relativeFilePath = '../../services/auth.js';
+      const cwd = './components/navbar';
+
+      try {
+        getAbsolutePath(relativeFilePath, cwd);
+      } catch (err) {
+        expect(err).toBe('ENOENT');
+      }
+    });
   });
 
   describe('getFileExt()', () => {
@@ -26,6 +81,16 @@ describe('utils', () => {
       const ext = getFileExt(fileName);
 
       expect(ext).toBe('css');
+    });
+  });
+
+  describe('getDiretoryName()', () => {
+    it('should return the containing folder name', () => {
+      const filePath = './components/navbar/navbar.js';
+
+      const expectedDirectoryName = './components/navbar';
+
+      expect(getDirectoryName(filePath)).toBe(expectedDirectoryName);
     });
   });
 
@@ -68,7 +133,10 @@ describe('utils', () => {
     it('should return the module metadata with isLocal=false for external dependency', () => {
       const filePath = 'lodash';
 
-      const fileMetaData: ModuleMetaData = getModuleMetaData(filePath);
+      const fileMetaData: ModuleMetaData = getModuleMetaData(
+        filePath,
+        './components/counter'
+      );
 
       expect(fileMetaData).toEqual({
         canocialName: 'LODASH',
@@ -88,8 +156,10 @@ describe('utils', () => {
 
     it('should identify local dependency', () => {
       const module = './local.js';
+      const deepModule = '../something.js';
 
       expect(isLocalModule(module)).toBeTruthy();
+      expect(isLocalModule(deepModule)).toBeTruthy();
     });
   });
 });
