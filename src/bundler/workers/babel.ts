@@ -176,7 +176,7 @@ export function babelTransform(
   moduleMetaData: ModuleMetaData
 ) {
   const transformedCode = (transform(fileContent, {
-    presets: ['es2015', 'react'],
+    presets: ['es2017', 'react'],
     plugins: [babelPlugin(moduleMetaData)]
   }) as any).code;
 

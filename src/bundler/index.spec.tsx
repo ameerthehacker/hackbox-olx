@@ -14,8 +14,6 @@ jest.mock('comlink', () => ({
 }));
 
 let someFileMetaData: ModuleMetaData;
-// This is added by babel at the top when we transpile to es5
-const useStrict = '"use strict";\n\n';
 
 // jest does not support web workers so we need to simulate it
 comlink.wrap = (worker: Worker) => {
@@ -41,11 +39,11 @@ describe('Babel plugin', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `${useStrict}var welcome$ = WELCOME.___default;
+    const expectedTransformedCode = `var welcome$ = WELCOME.___default;
 welcome$();`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -55,10 +53,10 @@ welcome$();`;
   it('it should replace the import by variable declaration', () => {
     const someFileMetaData = getModuleMetaData('./hello.js');
     const code = `import counter from './counter.js'`;
-    const expectedTransformedCode = `${useStrict}var counter$ = COUNTER.___default;`;
+    const expectedTransformedCode = `var counter$ = COUNTER.___default;`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -69,11 +67,11 @@ welcome$();`;
     const code = `import { welcome } from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `${useStrict}var welcome$ = WELCOME.welcome;
+    const expectedTransformedCode = `var welcome$ = WELCOME.welcome;
 welcome$();`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -84,11 +82,11 @@ welcome$();`;
     const code = `import { welcome as something } from './welcome';
     something();
     `;
-    const expectedTransformedCode = `${useStrict}var something$ = WELCOME.welcome;
+    const expectedTransformedCode = `var something$ = WELCOME.welcome;
 something$();`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -103,7 +101,7 @@ something$();`;
       `;
 
     transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     });
 
@@ -119,7 +117,7 @@ something$();`;
     export default counter;`;
 
     transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     });
 
@@ -134,7 +132,7 @@ something$();`;
     const code = `export default function someName() { console.log('ha ha') }`;
 
     transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     });
 
@@ -146,10 +144,10 @@ something$();`;
   it('should remove default exports', () => {
     const code = `const counter = 10;
     export default counter;`;
-    const expectedTransformedCode = `${useStrict}var counter = 10;`;
+    const expectedTransformedCode = `const counter = 10;`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -158,12 +156,12 @@ something$();`;
 
   it('should handle the anonymous default exports', () => {
     const code = `export default function someName() { console.log('ha ha') }`;
-    const expectedTransformedCode = `${useStrict}var _defaultExportFunc = function someName() {
+    const expectedTransformedCode = `var _defaultExportFunc = function someName() {
   console.log('ha ha');
 };`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
@@ -173,10 +171,10 @@ something$();`;
   it('should remove named exports', () => {
     const code = `const counter = 10;
     export { counter };`;
-    const expectedTransformedCode = `${useStrict}var counter = 10;`;
+    const expectedTransformedCode = `const counter = 10;`;
 
     const transformedCode = transform(code, {
-      presets: ['es2015'],
+      presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
     }).code;
 
