@@ -15,6 +15,26 @@ export class FS {
     return this.vol.readdirSync(path);
   }
 
+  getDirectoriesInPath(path: string): string[] {
+    const paths = this.readDir(path);
+
+    const directories: string[] = paths.filter((item) =>
+      this.isDirectory(`${path}/${item}`)
+    );
+
+    return directories;
+  }
+
+  getFilesInPath(path: string): string[] {
+    const paths = this.readDir(path);
+
+    const files: string[] = paths.filter(
+      (item) => !this.isDirectory(`${path}/${item}`)
+    );
+
+    return files;
+  }
+
   importFromJSON(files: Record<string, string>): void {
     this.vol.fromJSON(files);
   }

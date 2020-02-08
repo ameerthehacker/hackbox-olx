@@ -1,6 +1,5 @@
-import React, { ReactElement, useState, useContext } from 'react';
+import React, { ReactElement, useState } from 'react';
 import { Collapse, Box, Flex, theme, PseudoBox } from '@chakra-ui/core';
-import { TreeConfigContext } from './contexts/tree-config';
 
 function getStyles(isSelected: boolean): object {
   const stylesIfSelected = {
@@ -19,7 +18,7 @@ function getStyles(isSelected: boolean): object {
 interface TreeProps {
   collapseIcon?: ReactElement;
   expandIcon?: ReactElement;
-  children: ReactElement;
+  children?: ReactElement | null;
   label: string;
   isSelected?: boolean;
   onClick?: Function;
@@ -35,11 +34,7 @@ export function Tree({
   onClick = (): void => {}
 }: TreeProps): ReactElement {
   const [isCollapsed, setIsCollaped] = useState(true);
-  const treeConfig = useContext(TreeConfigContext);
   const styles = getStyles(isSelected);
-
-  collapseIcon = collapseIcon || treeConfig?.defaultCollapseIcon;
-  expandIcon = expandIcon || treeConfig?.defaultExpandIcon;
 
   return (
     <>
@@ -78,10 +73,7 @@ export function TreeItem({
   onClick,
   isSelected = false
 }: TreeItemProps): ReactElement {
-  const treeConfig = useContext(TreeConfigContext);
   const styles = getStyles(isSelected);
-
-  icon = icon || treeConfig?.defaultIcon;
 
   return (
     <Box
@@ -95,5 +87,3 @@ export function TreeItem({
     </Box>
   );
 }
-
-export { TreeConfigContext };
