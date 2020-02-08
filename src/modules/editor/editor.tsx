@@ -1,7 +1,7 @@
 import React, { ReactElement, useRef, KeyboardEvent } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useColorMode, Box } from '@chakra-ui/core';
-import Loading from './components/loading/loading';
+import Loader from '../../components/loader/loader';
 import { editor } from 'monaco-editor';
 
 interface EditorProps {
@@ -45,7 +45,16 @@ export default function Editor({
         }}
         {...restProps}
         editorDidMount={onEditorMounted}
-        loading={<Loading />}
+        loading={
+          <Loader
+            message="Loading Editor..."
+            spinnerProps={{
+              color: 'teal.600',
+              size: 'xl',
+              thickness: '4px'
+            }}
+          />
+        }
         height="calc(100vh - 55px)"
         theme={colorMode}
       />

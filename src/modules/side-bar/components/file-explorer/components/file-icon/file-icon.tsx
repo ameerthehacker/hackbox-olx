@@ -1,14 +1,9 @@
 import React, { ReactElement } from 'react';
-import { Image } from '@chakra-ui/core';
 
 interface FileIconProps {
-  icon: string;
-  [key: string]: string | number;
+  Icon: React.FC<React.SVGProps<SVGSVGElement>>;
 }
 
-export default function FileIcon({
-  icon,
-  ...rest
-}: FileIconProps): ReactElement {
-  return <Image {...rest} width="20px" alt="file-explorer icon" src={icon} />;
+export default function FileIcon({ Icon }: FileIconProps): ReactElement {
+  return <Icon width="20px" />;
 }

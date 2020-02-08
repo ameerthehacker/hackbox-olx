@@ -4,10 +4,10 @@ import { FS } from '../../../../services/fs/fs';
 import FileIcon from './components/file-icon/file-icon';
 import { getFileExt } from '../../../../utils/utils';
 // SVG images for the file explorer
-import DefaultFolderSvg from './images/default-folder.svg';
-import DefaultFolderOpenSvg from './images/default-folder-open.svg';
-import JSSvg from './images/js.svg';
-import DefaultFileSvg from './images/default-file.svg';
+import { ReactComponent as DefaultFolderSvg } from './images/default-folder.svg';
+import { ReactComponent as DefaultFolderOpenSvg } from './images/default-folder-open.svg';
+import { ReactComponent as JSSvg } from './images/js.svg';
+import { ReactComponent as DefaultFileSvg } from './images/default-file.svg';
 import { useSelectedFile } from '../../../../contexts/selected-file';
 import { Box, Flex, Stack, useToast } from '@chakra-ui/core';
 import { Tree, TreeItem, TreeConfigContext } from './components/tree/tree';
@@ -19,12 +19,14 @@ import {
 } from 'react-icons/fa';
 import AddFileOrFolder from './components/add-modal/add-modal';
 
-interface FileExplorerProps {
+export interface FileExplorerProps {
   rootPath: string;
   fs: FS | undefined;
 }
 
-function getFileIcon(fileName: string): string {
+function getFileIcon(
+  fileName: string
+): React.FC<React.SVGProps<SVGSVGElement>> {
   switch (getFileExt(fileName)) {
     case 'js': {
       return JSSvg;
@@ -74,7 +76,7 @@ function FileTree({ rootPath, fs }: FileExplorerProps): ReactElement {
           <TreeItem
             key={relativePath}
             onClick={(): void => setSelectedFile(relativePath)}
-            icon={<FileIcon icon={getFileIcon(file)} />}
+            icon={<FileIcon Icon={getFileIcon(file)} />}
             label={file}
             isSelected={isSelected}
           />
@@ -96,13 +98,17 @@ export default function FileExplorer(props: FileExplorerProps): ReactElement {
     defaultExpandIcon: (
       <Flex alignItems="center">
         <Box fontSize="15px" as={FaChevronRight}></Box>
-        <FileIcon ml={1} icon={DefaultFolderSvg} />
+        <Box ml={1}>
+          <FileIcon Icon={DefaultFolderSvg} />
+        </Box>
       </Flex>
     ),
     defaultCollapseIcon: (
       <Flex alignItems="center">
         <Box fontSize="15px" as={FaChevronDown}></Box>
-        <FileIcon ml={1} icon={DefaultFolderOpenSvg} />
+        <Box ml={1}>
+          <FileIcon Icon={DefaultFolderOpenSvg} />
+        </Box>
       </Flex>
     )
   });

@@ -1,23 +1,38 @@
-import React, { ReactElement, useState, useEffect, useContext } from 'react';
+import React, {
+  ReactElement,
+  useState,
+  useEffect,
+  useContext,
+  lazy,
+  LazyExoticComponent,
+  Suspense
+} from 'react';
 import ReactDOM from 'react-dom';
 import { Box, Flex } from '@chakra-ui/core';
 import useFormat from '../../components/format/format';
 import { FaCopy, FaCog } from 'react-icons/fa';
 import SideBarIcon from './components/side-bar-icon/side-bar-icon';
 import { IconType } from 'react-icons/lib/cjs';
-import FileExplorer from './components/file-explorer/file-explorer';
-import Settings from './components/settings/settings';
+import { FileExplorerProps } from './components/file-explorer/file-explorer';
 import { FSContext } from '../../contexts/fs';
 import SplitPane from 'react-split-pane';
+import Loader from '../../components/loader/loader';
 
 interface SideBarSection {
   icon: IconType;
-  elem: ReactElement;
+  Elem: LazyExoticComponent<any>;
+  props?: FileExplorerProps;
 }
 
 interface SideBarProps {
   children?: ReactElement;
 }
+
+// Lazy loaded components
+const FileExplorer = lazy(() =>
+  import('./components/file-explorer/file-explorer')
+);
+const Settings = lazy(() => import('./components/settings/settings'));
 
 export default function SideBar({ children }: SideBarProps): ReactElement {
   const { bgColor, color } = useFormat();
@@ -25,11 +40,15 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
   const sideBarSections: SideBarSection[] = [
     {
       icon: FaCopy,
-      elem: <FileExplorer fs={fs} rootPath="." />
+      Elem: FileExplorer,
+      props: {
+        fs,
+        rootPath: '.'
+      }
     },
     {
       icon: FaCog,
-      elem: <Settings />
+      Elem: Settings
     }
   ];
   const [activeSideBarIconIndex, setActiveSideBarIndex] = useState(-1);
@@ -48,7 +67,7 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
         height="calc(100vh - 55px)"
         width="65px"
       >
-        {sideBarSections.map(({ icon, elem }, index) => (
+        {sideBarSections.map(({ icon, Elem, props }, index) => (
           <Box key={index}>
             <SideBarIcon
               onClick={(): void => setActiveSideBarIndex(index)}
@@ -58,7 +77,19 @@ export default function SideBar({ children }: SideBarProps): ReactElement {
             {/* TODO: better fallback if sidebar section does not exists */}
             {activeSideBarIconIndex === index
               ? ReactDOM.createPortal(
-                  elem,
+                  <Suspense
+                    fallback={
+                      <Loader
+                        spinnerProps={{
+                          color: 'teal.600',
+                          size: 'xl',
+                          thickness: '4px'
+                        }}
+                      />
+                    }
+                  >
+                    <Elem {...props} />
+                  </Suspense>,
                   document.getElementById('sidebar-section') || document.body
                 )
               : null}
