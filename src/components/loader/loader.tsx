@@ -11,7 +11,7 @@ export default function Loader({
   spinnerProps
 }: LoaderProps): ReactElement {
   return (
-    <Flex height="100vh" alignItems="center" justifyContent="center">
+    <Flex height="100%" alignItems="center" justifyContent="center">
       <Stack alignItems="center" spacing={1}>
         <Box>
           <Spinner {...spinnerProps} />

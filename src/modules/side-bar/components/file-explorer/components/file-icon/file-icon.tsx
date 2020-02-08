@@ -1,9 +1,28 @@
-import React, { ReactElement } from 'react';
+import React, {
+  ReactElement,
+  FC,
+  SVGProps,
+  LazyExoticComponent,
+  Suspense
+} from 'react';
+import Loader from '../../../../../../components/loader/loader';
 
 interface FileIconProps {
-  Icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  Icon: LazyExoticComponent<FC<SVGProps<SVGSVGElement>>>;
 }
 
 export default function FileIcon({ Icon }: FileIconProps): ReactElement {
-  return <Icon width="20px" />;
+  return (
+    <Suspense
+      fallback={
+        <Loader
+          spinnerProps={{
+            size: 'xs'
+          }}
+        />
+      }
+    >
+      <Icon width="20px" />
+    </Suspense>
+  );
 }

@@ -1,15 +1,26 @@
-import React, { ReactElement, useState } from 'react';
+import React, {
+  ReactElement,
+  useState,
+  lazy,
+  LazyExoticComponent,
+  SVGProps,
+  FC
+} from 'react';
 import { Tree, TreeItem } from '../tree/tree';
 import { getFileExt } from '../../../../../../utils/utils';
-import JSSvg from './images/js.svg';
-import DefaultFileSvg from './images/default-file.svg';
 import { Box, Flex } from '@chakra-ui/core';
 import FileIcon from '../file-icon/file-icon';
 import { FS } from '../../../../../../services/fs/fs';
 // SVG images for the file explorer
-import DefaultFolderSvg from './images/default-folder.svg';
-import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
+
+// lazy loaded folder icons
+const DefaultFolderSvg = lazy(() =>
+  import(/* webpackPrefetch: true */ './images/default-folder.svg')
+);
+const DefaultFolderOpenSvg = lazy(() =>
+  import(/* webpackPrefetch: true */ './images/default-folder-open.svg')
+);
 
 const defaultExpandIcon = (
   <Flex alignItems="center">
@@ -38,13 +49,13 @@ export interface FileTreeProps {
 
 export function getFileIcon(
   fileName: string
-): React.FC<React.SVGProps<SVGSVGElement>> {
+): LazyExoticComponent<FC<SVGProps<SVGSVGElement>>> {
   switch (getFileExt(fileName)) {
     case 'js': {
-      return JSSvg;
+      return lazy(() => import('./images/js.svg'));
     }
     default:
-      return DefaultFileSvg;
+      return lazy(() => import('./images/default-file.svg'));
   }
 }
 
