@@ -1,14 +1,26 @@
-import React, { ReactElement, useContext, useState } from 'react';
+import React, {
+  ReactElement,
+  useContext,
+  useState,
+  lazy,
+  Suspense
+} from 'react';
 import NavBar from '../../components/navbar/navbar';
 import SideBar from '../side-bar/side-bar';
-import Editor from '../editor/editor';
-import PreviewWindow from '../preview-window/preview-window';
 import { useSelectedFile } from '../../contexts/selected-file';
 import { FSContext } from '../../contexts/fs';
 import EmptyState from './components/empty-state/empty-state';
 import { Broadcaster } from '../../services/broadcaster/broadcaster';
 import SplitPane from 'react-split-pane';
 import { Box } from '@chakra-ui/core';
+import Loader from '../../components/loader/loader';
+
+const Editor = lazy(() =>
+  import(/* webpackPrefetch: true */ '../editor/editor')
+);
+const PreviewWindow = lazy(() =>
+  import(/* webpackPrefetch: true */ '../preview-window/preview-window')
+);
 
 export default function Hackbox(): ReactElement {
   const fs = useContext(FSContext);
@@ -49,13 +61,39 @@ export default function Hackbox(): ReactElement {
         >
           {code !== null ? (
             // the box surrounding editor helps it to play well with splitpane
-            <Box position="absolute" width="100%">
-              <Editor onSave={onSave} language="javascript" value={code} />
-            </Box>
+            <Suspense
+              fallback={
+                <Loader
+                  message="Downloading Editor..."
+                  spinnerProps={{
+                    color: 'teal.600',
+                    size: 'xl',
+                    thickness: '4px'
+                  }}
+                />
+              }
+            >
+              <Box position="absolute" width="100%">
+                <Editor onSave={onSave} language="javascript" value={code} />
+              </Box>
+            </Suspense>
           ) : (
             <EmptyState />
           )}
-          <PreviewWindow />
+          <Suspense
+            fallback={
+              <Loader
+                message="Preparing Preview..."
+                spinnerProps={{
+                  color: 'teal.600',
+                  size: 'xl',
+                  thickness: '4px'
+                }}
+              />
+            }
+          >
+            <PreviewWindow />
+          </Suspense>
         </SplitPane>
       </SideBar>
     </>
