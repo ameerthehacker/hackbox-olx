@@ -54,6 +54,9 @@ export function getFileIcon(
     case 'js': {
       return lazy(() => import('./images/js.svg'));
     }
+    case 'css': {
+      return lazy(() => import('./images/css.svg'));
+    }
     default:
       return lazy(() => import('./images/default-file.svg'));
   }

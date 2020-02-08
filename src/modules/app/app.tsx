@@ -67,7 +67,10 @@ ReactDOM.render(App, document.getElementById('output'));
     './hello.js': `export default function() {
   alert('this is to test proper caching');
 }
-`
+`,
+    './index.css': `body {
+  background-color: red;
+}`
   };
 
   const broadcaster = Broadcaster.getInstance();
