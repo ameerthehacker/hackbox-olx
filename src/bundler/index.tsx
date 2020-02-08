@@ -1,21 +1,9 @@
 import { getModuleMetaData, getDirectoryName } from '../utils/utils';
 import { FS } from '../services/fs/fs';
-import { transform } from '@babel/standalone';
 import { CodeCache } from './services/code-cache/code-cache';
+import * as comlink from 'comlink';
 
 const cache = CodeCache.getInstance();
-
-// TODO: these typing are fucking useless make them better
-export interface BabelTypes {
-  identifier: (id: string) => object;
-  functionExpression: (
-    id: any,
-    params: any,
-    body: any,
-    generator: any,
-    async: any
-  ) => object;
-}
 
 export interface ModuleDef {
   module: Function;
@@ -35,162 +23,6 @@ export interface ModuleMetaData {
 export interface ExportsMetaData {
   [name: string]: string;
   ___default: string;
-}
-
-export function babelPlugin(
-  fileMetaData: ModuleMetaData
-): ({ types }: { types: BabelTypes }) => object {
-  return ({ types }): object => {
-    return {
-      visitor: {
-        ImportDeclaration(path: any): void {
-          const containingDirectoryName = getDirectoryName(fileMetaData.path);
-          const depMetaData = getModuleMetaData(
-            path.node.source.value,
-            containingDirectoryName
-          );
-          fileMetaData.deps?.push(depMetaData);
-
-          // check if there are any default imports
-          const defaultImport = path.node.specifiers.find(
-            (specifier: { type: string }) =>
-              specifier.type === 'ImportDefaultSpecifier'
-          );
-
-          /*
-          import hello from './hello.js';
-  
-          hello();
-          ==============================
-          above code is transformed into
-          ==============================
-          var hello$ = HELLO.___default;
-          
-          hello$();
-          */
-          if (defaultImport) {
-            const localVariableName = `${defaultImport.local.name}$`;
-
-            path.scope.push({
-              id: types.identifier(localVariableName),
-              init: types.identifier(`${depMetaData.canocialName}.___default`)
-            });
-
-            path.scope.rename(defaultImport.local.name, localVariableName);
-          }
-          // check if there are any named imports and transform them
-          const namedImports = path.node.specifiers.filter(
-            (specifier: { type: string }) =>
-              specifier.type === 'ImportSpecifier'
-          );
-
-          /*
-          import { hello as something } from './hello.js';
-  
-          something();
-          ==============================
-          above code is transformed into
-          ==============================
-          var something$ = HELLO.hello;
-
-          something$();
-          */
-          for (const namedImport of namedImports) {
-            // namedImport.local.name => something
-            // namedImport.imported.name => hello
-            const localVariableName = `${namedImport.local.name}$`;
-
-            path.scope.push({
-              id: types.identifier(localVariableName),
-              init: types.identifier(
-                `${depMetaData.canocialName}.${namedImport.imported.name}`
-              )
-            });
-
-            path.scope.rename(namedImport.local.name, localVariableName);
-          }
-
-          path.remove();
-        },
-        ExportDefaultDeclaration(path: any): void {
-          if (fileMetaData.exports === undefined) {
-            fileMetaData.exports = {
-              ___default: ''
-            };
-          }
-
-          const declaration = path.node.declaration;
-
-          if (declaration.type === 'Identifier') {
-            fileMetaData.exports.___default = path.node.declaration.name;
-          } else if (declaration.type === 'FunctionDeclaration') {
-            const uid = path.scope.generateUidIdentifier('defaultExportFunc');
-
-            path.scope.push({
-              id: uid,
-              init: types.functionExpression(
-                declaration.id,
-                declaration.params,
-                declaration.body,
-                declaration.generator,
-                declaration.async
-              )
-            });
-
-            fileMetaData.exports.___default = uid.name;
-          }
-          /*
-          function hello() {
-            console.log('hello world');
-          }
-  
-          export default hello;
-          ==============================
-          above code is transformed into
-          ==============================
-          function hello() {
-            console.log('hello world');
-          }
-          */
-          path.remove();
-        },
-        ExportNamedDeclaration(path: any): void {
-          if (fileMetaData.exports === undefined) {
-            fileMetaData.exports = {
-              ___default: ''
-            };
-          }
-          // check if there are any named exports and transform them
-          const namedExports = path.node.specifiers.filter(
-            (specifier: { type: string }) =>
-              specifier.type === 'ExportSpecifier'
-          );
-
-          /*
-          function hello() {
-            console.log('hello world');
-          }
-  
-          export { hello as something };
-          ==============================
-          above code is transformed into
-          ==============================
-          function hello() {
-            console.log('hello world');
-          }
-          */
-          for (const namedExport of namedExports) {
-            // namedExport.local.name => hello
-            // nmaedExport.exported.name => something
-            fileMetaData.exports[namedExport.exported.name] =
-              namedExport.local.name;
-          }
-
-          path.remove();
-        }
-      }
-    };
-  };
 }
 
 /*
@@ -232,10 +64,18 @@ export async function buildExecutableModules(
       }
     }
 
-    let transformedCode = (transform(fileContent, {
-      presets: ['es2015', 'react'],
-      plugins: [babelPlugin(moduleMetaData)]
-    }) as any).code;
+    const babelWorker = comlink.wrap<{
+      babelTransform(
+        fileContent: string,
+        moduleMetaData: ModuleMetaData
+      ): { transformedCode: string; hydratedModuleMetaData: ModuleMetaData };
+    }>(new Worker('./workers/babel.ts'));
+
+    /* eslint-disable prefer-const */
+    let {
+      transformedCode,
+      hydratedModuleMetaData
+    } = await babelWorker.babelTransform(fileContent, moduleMetaData);
 
     /*
     var hello$ = HELLO.___default();
@@ -256,11 +96,13 @@ export async function buildExecutableModules(
     */
     const exports = [];
 
-    for (const exportKey in moduleMetaData.exports) {
-      const exportedRef = moduleMetaData.exports[exportKey];
+    for (const exportKey in hydratedModuleMetaData.exports) {
+      const exportedRef = hydratedModuleMetaData.exports[exportKey];
 
       if (exportedRef && exportedRef.trim().length > 0) {
-        exports.push(`${exportKey}: ${moduleMetaData.exports[exportKey]}`);
+        exports.push(
+          `${exportKey}: ${hydratedModuleMetaData.exports[exportKey]}`
+        );
       }
     }
     const returnValue = `{${exports.join(',')}}`;
@@ -293,7 +135,7 @@ export async function buildExecutableModules(
     }
     */
     // build the executable modules of all the dependencies first
-    for (const dep of moduleMetaData.deps) {
+    for (const dep of hydratedModuleMetaData.deps) {
       // check if the module is already built or not
       if (!cache.get(dep.canocialName)) {
         // transform that dependency and cache it
@@ -301,13 +143,13 @@ export async function buildExecutableModules(
       }
     }
 
-    const depArgs = moduleMetaData.deps.map((dep) => dep.canocialName);
+    const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
     const moduleDef: ModuleDef = {
       module: new Function(...depArgs, transformedCode),
       deps: depArgs
     };
     // add module to the code cache
-    cache.set(moduleMetaData.canocialName, moduleDef);
+    cache.set(hydratedModuleMetaData.canocialName, moduleDef);
 
     return moduleDef;
   } else {

@@ -1,13 +1,35 @@
 import { transform } from '@babel/standalone';
-import { babelPlugin, buildExecutableModules, run } from './index';
-import { ModuleMetaData } from './contracts/module-meta-data';
+import { buildExecutableModules, run } from './index';
+import { babelPlugin, babelTransform } from '../bundler/workers/babel';
+import { ModuleMetaData } from '../bundler';
 import { getModuleMetaData } from '../utils/utils';
 import { FS } from '../services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
+import * as comlink from 'comlink';
+
+/* eslint-disable @typescript-eslint/no-empty-function */
+jest.mock('comlink', () => ({
+  wrap: () => {},
+  expose: () => {}
+}));
 
 let someFileMetaData: ModuleMetaData;
 // This is added by babel at the top when we transpile to es5
 const useStrict = '"use strict";\n\n';
+
+// jest does not support web workers so we need to simulate it
+comlink.wrap = (worker: Worker) => {
+  if (worker.URL.includes('babel.ts')) {
+    return {
+      babelTransform: (filecontent: string, moduleMetaData: ModuleMetaData) =>
+        Promise.resolve(babelTransform(filecontent, moduleMetaData))
+    };
+  }
+};
+
+window.Worker = class Worker {
+  constructor(public URL: string) {}
+};
 
 describe('Babel plugin', () => {
   beforeEach(() => {
@@ -163,7 +185,7 @@ something$();`;
 });
 
 describe('buildExecutableModule()', () => {
-  afterEach(() => {
+  beforeEach(() => {
     jest.resetAllMocks();
   });
 

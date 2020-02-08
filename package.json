@@ -22,6 +22,7 @@
     "@emotion/core": "^10.0.27",
     "@emotion/styled": "^10.0.27",
     "@monaco-editor/react": "^3.0.1",
+    "comlink": "^4.2.0",
     "emotion-theming": "^10.0.27",
     "memfs": "^3.0.3",
     "monaco-editor": "^0.19.3",
