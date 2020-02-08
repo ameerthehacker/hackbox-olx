@@ -1,7 +1,6 @@
 import { Volume } from 'memfs';
 
 export class FS {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
   private vol: any = null;
 
   constructor(files: Record<string, string> = {}) {

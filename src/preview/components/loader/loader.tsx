@@ -11,11 +11,7 @@ import {
 export default function Loader(): ReactElement {
   return (
     <ThemeProvider>
-      <Flex
-        height="calc(100vh -  55px)"
-        alignItems="center"
-        justifyContent="center"
-      >
+      <Flex height="100vh" alignItems="center" justifyContent="center">
         <Stack alignItems="center" spacing={1}>
           <Box>
             <Spinner color="teal.600" size="xl" thickness="4px" />

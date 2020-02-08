@@ -1,17 +1,17 @@
 import { transform } from '@babel/standalone';
 import { babelPlugin, buildExecutableModules, run } from './index';
-import { FileMetaData } from './contracts/file-meta-data';
-import { getFileMetaData } from '../utils/utils';
+import { ModuleMetaData } from './contracts/module-meta-data';
+import { getModuleMetaData } from '../utils/utils';
 import { FS } from '../services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 
-let someFileMetaData: FileMetaData;
+let someFileMetaData: ModuleMetaData;
 // This is added by babel at the top when we transpile to es5
 const useStrict = '"use strict";\n\n';
 
 describe('Babel plugin', () => {
   beforeEach(() => {
-    someFileMetaData = getFileMetaData('./hello.js');
+    someFileMetaData = getModuleMetaData('./hello.js');
     jest.resetAllMocks();
   });
 
@@ -19,7 +19,21 @@ describe('Babel plugin', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `${useStrict}_WELCOME.___default();`;
+    const expectedTransformedCode = `${useStrict}var welcome$ = WELCOME.___default;
+welcome$();`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(expectedTransformedCode);
+  });
+
+  it('it should replace the import by variable declaration', () => {
+    const someFileMetaData = getModuleMetaData('./hello.js');
+    const code = `import counter from './counter.js'`;
+    const expectedTransformedCode = `${useStrict}var counter$ = COUNTER.___default;`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -33,7 +47,8 @@ describe('Babel plugin', () => {
     const code = `import { welcome } from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `${useStrict}_WELCOME.welcome();`;
+    const expectedTransformedCode = `${useStrict}var welcome$ = WELCOME.welcome;
+welcome$();`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -47,7 +62,8 @@ describe('Babel plugin', () => {
     const code = `import { welcome as something } from './welcome';
     something();
     `;
-    const expectedTransformedCode = `${useStrict}_WELCOME.welcome();`;
+    const expectedTransformedCode = `${useStrict}var something$ = WELCOME.welcome;
+something$();`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -70,8 +86,8 @@ describe('Babel plugin', () => {
     });
 
     expect(someFileMetaData.deps).toEqual([
-      getFileMetaData('./modules/dep1'),
-      getFileMetaData('./modules/dep2')
+      getModuleMetaData('./modules/dep1'),
+      getModuleMetaData('./modules/dep2')
     ]);
   });
 
@@ -92,10 +108,37 @@ describe('Babel plugin', () => {
     });
   });
 
+  it('should return the inline default export function', () => {
+    const code = `export default function someName() { console.log('ha ha') }`;
+
+    transform(code, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(someFileMetaData)]
+    });
+
+    expect(someFileMetaData.exports).toEqual({
+      ___default: '_defaultExportFunc'
+    });
+  });
+
   it('should remove default exports', () => {
     const code = `const counter = 10;
     export default counter;`;
     const expectedTransformedCode = `${useStrict}var counter = 10;`;
+
+    const transformedCode = transform(code, {
+      presets: ['es2015'],
+      plugins: [babelPlugin(someFileMetaData)]
+    }).code;
+
+    expect(transformedCode).toBe(expectedTransformedCode);
+  });
+
+  it('should handle the anonymous default exports', () => {
+    const code = `export default function someName() { console.log('ha ha') }`;
+    const expectedTransformedCode = `${useStrict}var _defaultExportFunc = function someName() {
+  console.log('ha ha');
+};`;
 
     const transformedCode = transform(code, {
       presets: ['es2015'],
@@ -130,7 +173,7 @@ describe('buildExecutableModule()', () => {
     };
     const fs = new FS(files);
     const module = (
-      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();
@@ -146,7 +189,7 @@ describe('buildExecutableModule()', () => {
     };
     const fs = new FS(files);
     const module = (
-      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();
@@ -167,14 +210,14 @@ describe('buildExecutableModule()', () => {
     const cache = CodeCache.getInstance();
     const fs = new FS(files);
     const entryModule = (
-      await buildExecutableModules(getFileMetaData('./hello.js'), fs)
+      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();
     // try running the module with the _WELCOME dependency
     const entryFunc = new Function(
       'entryModule',
-      `entryModule(${cache.get('_WELCOME')?.module}())`
+      `entryModule(${cache.get('WELCOME')?.module}())`
     );
 
     entryFunc(entryModule);
@@ -256,19 +299,5 @@ describe('runModule', () => {
     expect(console.info).toHaveBeenCalledWith(
       'hello from renamed exports modules'
     );
-  });
-
-  it('should throw error when module is not found', async () => {
-    const files = {
-      './hello.js': `import { something as hello } from './welcome.js';
-      hello();`
-    };
-    const fs = new FS(files);
-
-    try {
-      await run(fs, './hello.js');
-    } catch (err) {
-      expect(err).toEqual(new Error(`module ./welcome.js does not exists`));
-    }
   });
 });

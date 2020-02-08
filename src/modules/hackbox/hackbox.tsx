@@ -7,6 +7,8 @@ import { useSelectedFile } from '../../contexts/selected-file';
 import { FSContext } from '../../contexts/fs';
 import EmptyState from './components/empty-state/empty-state';
 import { Broadcaster } from '../../services/broadcaster/broadcaster';
+import SplitPane from 'react-split-pane';
+import { Box } from '@chakra-ui/core';
 
 export default function Hackbox(): ReactElement {
   const fs = useContext(FSContext);
@@ -40,14 +42,21 @@ export default function Hackbox(): ReactElement {
     <>
       <NavBar />
       <SideBar>
-        <>
+        <SplitPane
+          style={{ height: 'calc(100vh - 57px)' }}
+          defaultSize={500}
+          primary="second"
+        >
           {code !== null ? (
-            <Editor onSave={onSave} language="javascript" value={code} />
+            // the box surrounding editor helps it to play well with splitpane
+            <Box position="absolute" width="100%">
+              <Editor onSave={onSave} language="javascript" value={code} />
+            </Box>
           ) : (
             <EmptyState />
           )}
           <PreviewWindow />
-        </>
+        </SplitPane>
       </SideBar>
     </>
   );

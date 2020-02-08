@@ -7,9 +7,9 @@ export default function Loading(): ReactElement {
 
   return (
     <Flex
-      height="calc(100vh - 55px)"
       width="100%"
       bg={bgColor}
+      height="100%"
       alignItems="center"
       justifyContent="center"
     >

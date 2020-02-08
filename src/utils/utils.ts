@@ -1,4 +1,4 @@
-import { FileMetaData } from '../bundler/contracts/file-meta-data';
+import { ModuleMetaData } from '../bundler';
 
 export function getFileExt(fileName: string): string {
   const fileNameArr = fileName.split('.');
@@ -21,40 +21,90 @@ export function getFileNameWithoutExt(fileName: string): string {
   return fileNameWithoutExt;
 }
 
-// TODO: take cwd path into account to find correct canocial name
-export function getCanocialName(filePath: string): string {
-  const filePathArr = filePath.split('/');
-  let canocialName = '';
+export function getAbsolutePath(relativePath: string, cwd: string) {
+  const relativePathArr = relativePath.split('/');
+  const cwdArr = cwd.split('/');
+  const relativePathToCwdArr: string[] = [];
+
+  // remove unwanted trailing slash -> ./components/
+  if (cwd.endsWith('/')) {
+    cwdArr.pop();
+  }
+
+  for (const relativePathSeg of relativePathArr) {
+    if (relativePathSeg === '..') {
+      cwdArr.pop();
+    } else if (relativePathSeg !== '.') {
+      relativePathToCwdArr.push(relativePathSeg);
+    }
+  }
+
+  const absolutePath = `${cwdArr.join('/')}/${relativePathToCwdArr.join('/')}`;
+
+  return absolutePath;
+}
+
+export function getCanocialName(filePath: string, cwd = '.'): string {
+  const absoluteFilePath = getAbsolutePath(filePath, cwd);
+  let absoluteFilePathArr = absoluteFilePath.split('/');
 
   // ./main.js => ['.', 'main.js'] => ['main.js']
-  if (filePathArr[0] === '.') {
-    filePathArr.splice(0, 1);
+  if (absoluteFilePathArr[0] === '.') {
+    absoluteFilePathArr.splice(0, 1);
   }
   // remove the extension from filename
-  filePathArr[filePathArr.length - 1] = getFileNameWithoutExt(
-    filePathArr[filePathArr.length - 1]
+  absoluteFilePathArr[absoluteFilePathArr.length - 1] = getFileNameWithoutExt(
+    absoluteFilePathArr[absoluteFilePathArr.length - 1]
   );
 
-  for (const filePath of filePathArr) {
-    canocialName += `_${filePath.toUpperCase()}`;
-  }
+  // nav-bar -> NAV__BAR
+  absoluteFilePathArr = absoluteFilePathArr.map((filePath) =>
+    filePath.replace('-', '__').toUpperCase()
+  );
+
+  const canocialName = absoluteFilePathArr.join('_');
 
   return canocialName;
 }
 
-export function getFileMetaData(filePath: string): FileMetaData {
-  const canocialName = getCanocialName(filePath);
-  const fileName = getFileName(filePath);
-  const ext = getFileExt(fileName);
+export function getDirectoryName(filePath: string): string {
+  const filePathArr = filePath.split('/');
+  // remove the fileName
+  filePathArr.pop();
 
-  return {
-    canocialName,
-    fileName,
-    ext,
-    path: filePath,
-    deps: [],
-    exports: {
-      ___default: ''
-    }
-  };
+  return filePathArr.join('/');
+}
+
+export function isLocalModule(filePath: string): boolean {
+  return filePath.startsWith('./') || filePath.startsWith('../');
+}
+
+export function getModuleMetaData(
+  filePath: string,
+  cwd = '.'
+): ModuleMetaData {
+  if (isLocalModule(filePath)) {
+    const fileName = getFileName(filePath);
+    const ext = getFileExt(fileName);
+    const canocialName = getCanocialName(filePath, cwd);
+
+    return {
+      canocialName,
+      fileName,
+      ext,
+      isLocalModule: true,
+      path: filePath,
+      deps: []
+    };
+  } else {
+    // external modules are always refered from root
+    const canocialName = getCanocialName(filePath, '.');
+
+    return {
+      canocialName,
+      isLocalModule: false,
+      path: filePath,
+      deps: []
+    };
+  }
 }
