@@ -4,12 +4,8 @@
   "description": "A fully open-sourced light weight web IDE",
   "private": true,
   "scripts": {
-    "start": "concurrently -k yarn:start-ui yarn:start-preview",
-    "start-preview": "cross-env PARCEL_AUTOINSTALL=false NODE_ENV=development parcel watch ./src/preview/index.html --out-dir public/preview --public-url /preview",
-    "start-ui": "node scripts/start.js",
-    "build": "concurrently yarn:build-ui yarn:build-preview",
-    "build-ui": "node scripts/build.js",
-    "build-preview": "parcel build ./src/preview/index.html --out-dir build/preview --public-url /preview",
+    "start": "node scripts/start.js",
+    "build": "node scripts/build.js",
     "test": "node scripts/test.js",
     "lint": "eslint . --ext .tsx,.ts",
     "lint:staged": "eslint --fix",
@@ -24,7 +20,6 @@
     "emotion-theming": "^10.0.27",
     "memfs": "^3.0.3",
     "monaco-editor": "^0.19.3",
-    "parcel": "^1.12.4",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-icons": "^3.8.0",
@@ -56,8 +51,6 @@
     "camelcase": "^5.3.1",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "comlink": "^4.2.0",
-    "concurrently": "^5.1.0",
-    "cross-env": "^7.0.0",
     "css-loader": "3.2.0",
     "dotenv": "8.2.0",
     "dotenv-expand": "5.1.0",
@@ -102,7 +95,8 @@
     "webpack": "4.41.2",
     "webpack-dev-server": "3.9.0",
     "webpack-manifest-plugin": "2.2.0",
-    "workbox-webpack-plugin": "4.3.1"
+    "workbox-webpack-plugin": "4.3.1",
+    "worker-loader": "^2.0.0"
   },
   "lint-staged": {
     "*.{js,ts,tsx,html,json,scss,css,md,yml}": [

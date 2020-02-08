@@ -8,7 +8,7 @@ export default function PreviewWindow(): ReactElement {
         title="hackbox-preview"
         height="100%"
         width="100%"
-        src={`${window.location.origin}/preview/index.html`}
+        src={`${window.location.origin}/preview.html`}
       />
     </Box>
   );

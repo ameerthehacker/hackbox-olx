@@ -2,6 +2,7 @@ import { getModuleMetaData, getDirectoryName } from '../utils/utils';
 import { FS } from '../services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 import * as comlink from 'comlink';
+import BabelWorker from 'worker-loader!./workers/babel.worker.ts';
 
 const cache = CodeCache.getInstance();
 
@@ -69,7 +70,7 @@ export async function buildExecutableModules(
         fileContent: string,
         moduleMetaData: ModuleMetaData
       ): { transformedCode: string; hydratedModuleMetaData: ModuleMetaData };
-    }>(new Worker('./workers/babel.ts'));
+    }>(new BabelWorker());
 
     /* eslint-disable prefer-const */
     let {

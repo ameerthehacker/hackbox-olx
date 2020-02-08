@@ -39,6 +39,14 @@ declare module '*.webp' {
   export default src;
 }
 
+declare module 'worker-loader!*' {
+  class WebpackWorker extends Worker {
+    constructor();
+  }
+
+  export default WebpackWorker;
+}
+
 declare module '*.svg' {
   import * as React from 'react';
 

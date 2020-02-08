@@ -1,6 +1,6 @@
 import { transform } from '@babel/standalone';
 import { buildExecutableModules, run } from './index';
-import { babelPlugin, babelTransform } from '../bundler/workers/babel';
+import { babelPlugin, babelTransform } from './workers/babel.worker';
 import { ModuleMetaData } from '../bundler';
 import { getModuleMetaData } from '../utils/utils';
 import { FS } from '../services/fs/fs';
