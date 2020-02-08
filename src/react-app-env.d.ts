@@ -46,8 +46,7 @@ declare module '*.svg' {
     SVGSVGElement
   >>;
 
-  const src: string;
-  export default src;
+  export default ReactComponent;
 }
 
 declare module '*.module.css' {

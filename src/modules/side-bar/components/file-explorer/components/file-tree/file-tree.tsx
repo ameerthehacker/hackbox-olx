@@ -1,14 +1,14 @@
 import React, { ReactElement, useState } from 'react';
 import { Tree, TreeItem } from '../tree/tree';
 import { getFileExt } from '../../../../../../utils/utils';
-import { ReactComponent as JSSvg } from '../../images/js.svg';
-import { ReactComponent as DefaultFileSvg } from '../../images/default-file.svg';
+import JSSvg from './images/js.svg';
+import DefaultFileSvg from './images/default-file.svg';
 import { Box, Flex } from '@chakra-ui/core';
 import FileIcon from '../file-icon/file-icon';
 import { FS } from '../../../../../../services/fs/fs';
 // SVG images for the file explorer
-import { ReactComponent as DefaultFolderSvg } from '../../images/default-folder.svg';
-import { ReactComponent as DefaultFolderOpenSvg } from '../../images/default-folder-open.svg';
+import DefaultFolderSvg from './images/default-folder.svg';
+import DefaultFolderOpenSvg from './images/default-folder-open.svg';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
 const defaultExpandIcon = (

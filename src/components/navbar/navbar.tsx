@@ -9,7 +9,7 @@ import {
   Button
 } from '@chakra-ui/core';
 import Logo from './components/logo/logo';
-import { ReactComponent as GitHubLogo } from './github-logo.svg';
+import GitHubLogo from './github-logo.svg';
 import useFormat from '../format/format';
 
 export default function NavBar(): ReactElement {
