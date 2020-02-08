@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { IconType } from 'react-icons/lib/cjs';
 import { Box, theme } from '@chakra-ui/core';
-import useFormat from '../../../../components/format/format';
+import useFormat from '@hackbox/components/format/format';
 
 interface SideBarIconProps {
   icon: IconType;

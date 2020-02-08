@@ -1,7 +1,7 @@
 import React, { ReactElement, useRef, KeyboardEvent } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useColorMode, Box } from '@chakra-ui/core';
-import Loader from '../../components/loader/loader';
+import Loader from '@hackbox/components/loader/loader';
 import { editor } from 'monaco-editor';
 
 interface EditorProps {

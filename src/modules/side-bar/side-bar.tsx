@@ -9,14 +9,14 @@ import React, {
 } from 'react';
 import ReactDOM from 'react-dom';
 import { Box, Flex } from '@chakra-ui/core';
-import useFormat from '../../components/format/format';
+import useFormat from '@hackbox/components/format/format';
 import { FaCopy, FaCog } from 'react-icons/fa';
 import SideBarIcon from './components/side-bar-icon/side-bar-icon';
 import { IconType } from 'react-icons/lib/cjs';
 import { FileExplorerProps } from './components/file-explorer/file-explorer';
-import { FSContext } from '../../contexts/fs';
+import { FSContext } from '@hackbox/contexts/fs';
 import SplitPane from 'react-split-pane';
-import Loader from '../../components/loader/loader';
+import Loader from '@hackbox/components/loader/loader';
 
 interface SideBarSection {
   icon: IconType;

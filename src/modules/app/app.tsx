@@ -1,10 +1,10 @@
 import React, { ReactElement } from 'react';
 import { HashRouter, Route, Switch } from 'react-router-dom';
 import Hackbox from '../hackbox/hackbox';
-import { SelectedFileProvider } from '../../contexts/selected-file';
-import { FSContext } from '../../contexts/fs';
-import { FS } from '../../services/fs/fs';
-import { Broadcaster } from '../../services/broadcaster/broadcaster';
+import { SelectedFileProvider } from '@hackbox/contexts/selected-file';
+import { FSContext } from '@hackbox/contexts/fs';
+import { FS } from '@hackbox/services/fs/fs';
+import { Broadcaster } from '@hackbox/services/broadcaster/broadcaster';
 
 export default function App(): ReactElement {
   // TODO: replace with template files

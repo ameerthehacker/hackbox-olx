@@ -17,7 +17,7 @@ import {
   ModalFooter,
   Button
 } from '@chakra-ui/core';
-import useFormat from '../../../../../../components/format/format';
+import useFormat from '@hackbox/components/format/format';
 
 interface AddFileOrFolderProps {
   isOpen: boolean;

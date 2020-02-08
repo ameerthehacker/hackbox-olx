@@ -7,10 +7,10 @@ import React, {
   FC
 } from 'react';
 import { Tree, TreeItem } from '../tree/tree';
-import { getFileExt } from '../../../../../../utils/utils';
+import { getFileExt } from '@hackbox/utils/utils';
 import { Box, Flex } from '@chakra-ui/core';
 import FileIcon from '../file-icon/file-icon';
-import { FS } from '../../../../../../services/fs/fs';
+import { FS } from '@hackbox/services/fs/fs';
 // SVG images for the file explorer
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 

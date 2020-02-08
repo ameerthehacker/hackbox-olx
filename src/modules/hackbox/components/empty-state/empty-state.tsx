@@ -1,6 +1,6 @@
 import React, { ReactElement } from 'react';
 import { Flex, Text, Stack, Box } from '@chakra-ui/core';
-import useFormat from '../../../../components/format/format';
+import useFormat from '@hackbox/components/format/format';
 import BoxSvg from './box.svg';
 
 export default function EmptyState(): ReactElement {

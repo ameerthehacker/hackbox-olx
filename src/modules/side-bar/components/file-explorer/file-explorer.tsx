@@ -1,6 +1,6 @@
 import React, { ReactElement, useState } from 'react';
-import { FS } from '../../../../services/fs/fs';
-import { useSelectedFile } from '../../../../contexts/selected-file';
+import { FS } from '@hackbox/services/fs/fs';
+import { useSelectedFile } from '@hackbox/contexts/selected-file';
 import { Box, Flex, Stack, useToast } from '@chakra-ui/core';
 import { FaFolderPlus, FaFile } from 'react-icons/fa';
 import AddFileOrFolder from './components/add-modal/add-modal';

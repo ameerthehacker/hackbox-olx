@@ -5,15 +5,15 @@ import React, {
   lazy,
   Suspense
 } from 'react';
-import NavBar from '../../components/navbar/navbar';
+import NavBar from '@hackbox/components/navbar/navbar';
 import SideBar from '../side-bar/side-bar';
-import { useSelectedFile } from '../../contexts/selected-file';
-import { FSContext } from '../../contexts/fs';
+import { useSelectedFile } from '@hackbox/contexts/selected-file';
+import { FSContext } from '@hackbox/contexts/fs';
 import EmptyState from './components/empty-state/empty-state';
-import { Broadcaster } from '../../services/broadcaster/broadcaster';
+import { Broadcaster } from '@hackbox/services/broadcaster/broadcaster';
 import SplitPane from 'react-split-pane';
 import { Box } from '@chakra-ui/core';
-import Loader from '../../components/loader/loader';
+import Loader from '@hackbox/components/loader/loader';
 
 const Editor = lazy(() =>
   import(/* webpackPrefetch: true */ '../editor/editor')

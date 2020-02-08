@@ -5,7 +5,7 @@ import React, {
   LazyExoticComponent,
   Suspense
 } from 'react';
-import Loader from '../../../../../../components/loader/loader';
+import Loader from '@hackbox/components/loader/loader';
 
 interface FileIconProps {
   Icon: LazyExoticComponent<FC<SVGProps<SVGSVGElement>>>;
