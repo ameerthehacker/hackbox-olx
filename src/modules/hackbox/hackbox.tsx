@@ -74,7 +74,7 @@ export default function Hackbox(): ReactElement {
               }
             >
               <Box position="absolute" width="100%">
-                <Editor onSave={onSave} language="javascript" value={code} />
+                <Editor onSave={onSave} fs={fs} selectedFile={selectedFile} />
               </Box>
             </Suspense>
           ) : (
