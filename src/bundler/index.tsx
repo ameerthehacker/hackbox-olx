@@ -6,6 +6,14 @@ import BabelWorker from 'worker-loader!./workers/babel.worker.ts';
 
 const cache = CodeCache.getInstance();
 
+// we should not add this to the render function as it will be downloaded during every render
+const babelWorker = comlink.wrap<{
+  babelTransform(
+    fileContent: string,
+    moduleMetaData: ModuleMetaData
+  ): { transformedCode: string; hydratedModuleMetaData: ModuleMetaData };
+}>(new BabelWorker());
+
 export interface ModuleDef {
   module: Function;
   deps: string[];
@@ -64,13 +72,6 @@ export async function buildExecutableModules(
         throw err;
       }
     }
-
-    const babelWorker = comlink.wrap<{
-      babelTransform(
-        fileContent: string,
-        moduleMetaData: ModuleMetaData
-      ): { transformedCode: string; hydratedModuleMetaData: ModuleMetaData };
-    }>(new BabelWorker());
 
     /* eslint-disable prefer-const */
     let {
