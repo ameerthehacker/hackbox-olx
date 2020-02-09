@@ -26,6 +26,7 @@ export default function Editor({
   type IStandaloneCodeEditor = monacoEditor.IStandaloneCodeEditor;
   const { colorMode } = useColorMode();
   const editorRef = useRef<IStandaloneCodeEditor>();
+  const currentLanguage = useRef<string | undefined>();
 
   function setEditorLanguage(
     editor: IStandaloneCodeEditor | undefined,
@@ -39,11 +40,15 @@ export default function Editor({
 
     if (language === undefined) return;
 
+    // don't update if it is the same language
+    if (language === currentLanguage.current) return;
+
     if (editor !== undefined) {
       const editorModel = editor.getModel();
 
       if (editorModel !== null) {
         monacoEditor.setModelLanguage(editorModel, language);
+        currentLanguage.current = language;
       }
     }
   }
