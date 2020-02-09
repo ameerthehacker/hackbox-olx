@@ -8,9 +8,9 @@ import { CodeCache } from './services/code-cache/code-cache';
 import * as comlink from 'comlink';
 
 /* eslint-disable @typescript-eslint/no-empty-function */
-jest.mock('comlink', () => ({
-  wrap: () => {},
-  expose: () => {}
+jest.mock('comlink', (): { wrap: () => void; expose: () => void } => ({
+  wrap: (): void => {},
+  expose: (): void => {}
 }));
 
 let someFileMetaData: ModuleMetaData;
@@ -23,10 +23,6 @@ comlink.wrap = (worker: Worker) => {
         Promise.resolve(babelTransform(filecontent, moduleMetaData))
     };
   }
-};
-
-window.Worker = class Worker {
-  constructor(public URL: string) {}
 };
 
 describe('Babel plugin', () => {

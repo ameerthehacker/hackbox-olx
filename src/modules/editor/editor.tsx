@@ -1,10 +1,4 @@
-import React, {
-  ReactElement,
-  useRef,
-  KeyboardEvent,
-  useState,
-  useEffect
-} from 'react';
+import React, { ReactElement, useRef, KeyboardEvent, useEffect } from 'react';
 import MonacoEditor from '@monaco-editor/react';
 import { useColorMode, Box } from '@chakra-ui/core';
 import Loader from '@hackbox/components/loader/loader';
@@ -31,7 +25,7 @@ export default function Editor({
   function setEditorLanguage(
     editor: IStandaloneCodeEditor | undefined,
     fileExt: string
-  ) {
+  ): void {
     const extLanguageMap: { [ext: string]: string } = {
       js: 'javascript',
       css: 'css'
@@ -53,7 +47,9 @@ export default function Editor({
     }
   }
 
-  function loadSelectedFileCode(editor: IStandaloneCodeEditor | undefined) {
+  function loadSelectedFileCode(
+    editor: IStandaloneCodeEditor | undefined
+  ): void {
     if (selectedFile !== undefined && !fs.isDirectory(selectedFile)) {
       if (editor !== undefined) {
         const fileExt = getFileExt(selectedFile);

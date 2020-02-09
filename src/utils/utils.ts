@@ -21,7 +21,7 @@ export function getFileNameWithoutExt(fileName: string): string {
   return fileNameWithoutExt;
 }
 
-export function getAbsolutePath(relativePath: string, cwd: string) {
+export function getAbsolutePath(relativePath: string, cwd: string): string {
   const relativePathArr = relativePath.split('/');
   const cwdArr = cwd.split('/');
   const relativePathToCwdArr: string[] = [];
@@ -79,10 +79,7 @@ export function isLocalModule(filePath: string): boolean {
   return filePath.startsWith('./') || filePath.startsWith('../');
 }
 
-export function getModuleMetaData(
-  filePath: string,
-  cwd = '.'
-): ModuleMetaData {
+export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
   if (isLocalModule(filePath)) {
     const fileName = getFileName(filePath);
     const ext = getFileExt(fileName);

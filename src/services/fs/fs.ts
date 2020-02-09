@@ -1,6 +1,8 @@
 import { Volume } from 'memfs';
 
 export class FS {
+  // we can't help the any here as the type and value has no fucking relationship whatsoever
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   private vol: any = null;
 
   constructor(files: Record<string, string> = {}) {

@@ -55,7 +55,7 @@ export default function FileExplorer({
         <FileTree
           fs={fs}
           path={rootPath}
-          onSelected={(path) => setSelectedFile(path)}
+          onSelected={(path): void => setSelectedFile(path)}
           selectedPath={selectedFile}
         />
       </Box>

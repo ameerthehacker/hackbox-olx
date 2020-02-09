@@ -29,6 +29,7 @@
   "devDependencies": {
     "@babel/core": "7.7.4",
     "@babel/preset-typescript": "^7.8.3",
+    "@babel/types": "^7.8.3",
     "@svgr/webpack": "4.3.3",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -148,7 +149,8 @@
     "transform": {
       "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
+      "^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js",
+      "worker-loader!./workers/babel.worker.ts": "<rootDir>/config/jest/workerTransform.js"
     },
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
@@ -157,8 +159,7 @@
     "modulePaths": [],
     "moduleNameMapper": {
       "^@hackbox(.*)$": "<rootDir>/src$1",
-      "^react-native$": "react-native-web",
-      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
+      "^react-native$": "react-native-web"
     },
     "moduleFileExtensions": [
       "web.js",
@@ -170,7 +171,8 @@
       "json",
       "web.jsx",
       "jsx",
-      "node"
+      "node",
+      "worker.ts"
     ],
     "watchPlugins": [
       "jest-watch-typeahead/filename",

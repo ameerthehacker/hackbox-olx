@@ -1,4 +1,4 @@
-import { getModuleMetaData, getDirectoryName } from '@hackbox/utils/utils';
+import { getModuleMetaData } from '@hackbox/utils/utils';
 import { FS } from '@hackbox/services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 import * as comlink from 'comlink';

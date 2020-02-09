@@ -13,7 +13,7 @@ export class Broadcaster {
     return this.instance;
   }
 
-  public broadcast(event: EVENTS, message: any): void {
+  public broadcast(event: EVENTS, message: string | object): void {
     this.bc.postMessage({
       type: event,
       message

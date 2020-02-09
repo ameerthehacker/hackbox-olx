@@ -2,19 +2,26 @@ import { ModuleMetaData } from '..';
 import { transform } from '@babel/standalone';
 import { getModuleMetaData, getDirectoryName } from '../../utils/utils';
 import * as comlink from 'comlink';
+import {
+  FunctionExpression,
+  Identifier,
+  LVal,
+  BlockStatement
+} from '@babel/types';
 
 // TODO: these typing are fucking useless make them better
 export interface BabelTypes {
-  identifier: (id: string) => object;
+  identifier: (name: string) => Identifier;
   functionExpression: (
-    id: any,
-    params: any,
-    body: any,
-    generator: any,
-    async: any
-  ) => object;
+    id: Identifier,
+    params: Array<LVal>,
+    body: BlockStatement,
+    generator: boolean,
+    async: boolean
+  ) => FunctionExpression;
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function babelPlugin(
   fileMetaData: ModuleMetaData
 ): ({ types }: { types: BabelTypes }) => object {
@@ -174,7 +181,7 @@ export function babelPlugin(
 export function babelTransform(
   fileContent: string,
   moduleMetaData: ModuleMetaData
-) {
+): { transformedCode: string; hydratedModuleMetaData: ModuleMetaData } {
   const transformedCode = (transform(fileContent, {
     presets: ['es2017', 'react'],
     plugins: [babelPlugin(moduleMetaData)]
