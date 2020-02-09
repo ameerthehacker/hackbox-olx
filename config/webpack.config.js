@@ -157,13 +157,17 @@ module.exports = function(webpackEnv) {
       // the line below with these two lines if you prefer the stock client:
       // require.resolve('webpack-dev-server/client') + '?/',
       // require.resolve('webpack/hot/dev-server'),
-      // vendor: [
-      //   isEnvDevelopment &&
-      //     require.resolve('react-dev-utils/webpackHotDevClient')
-      // ].filter(Boolean),
       // Finally, this is your app's code:
-      main: paths.appIndexJs,
-      preview: paths.previewIndexJs
+      main: [
+        isEnvDevelopment &&
+          require.resolve('react-dev-utils/webpackHotDevClient'),
+        paths.appIndexJs
+      ].filter(Boolean),
+      preview: [
+        isEnvDevelopment &&
+          require.resolve('react-dev-utils/webpackHotDevClient'),
+        paths.previewIndexJs
+      ].filter(Boolean)
       // We include the app code last so that if there is a runtime error during
       // initialization, it doesn't blow up the WebpackDevServer client, and
       // changing JS code would still trigger a refresh.
@@ -351,7 +355,7 @@ module.exports = function(webpackEnv) {
           include: paths.appSrc
         },
         {
-          test: /\.worker\.ts$/,
+          test: /\.worker\.js$/,
           use: { loader: 'worker-loader' },
           include: paths.appSrc
         },
