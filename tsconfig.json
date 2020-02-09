@@ -2,11 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@hackbox/*": ["./src/*"],
-      "~/*": ["./src/*"]
+      "@hackbox/*": ["./src/*"]
     },
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

@@ -1,5 +1,5 @@
-import { getModuleMetaData, getDirectoryName } from '../utils/utils';
-import { FS } from '../services/fs/fs';
+import { getModuleMetaData, getDirectoryName } from '@hackbox/utils/utils';
+import { FS } from '@hackbox/services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 import * as comlink from 'comlink';
 import BabelWorker from 'worker-loader!./workers/babel.worker.ts';

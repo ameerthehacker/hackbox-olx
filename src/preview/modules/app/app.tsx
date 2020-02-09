@@ -1,8 +1,8 @@
 import React, { ReactElement, useEffect, useState } from 'react';
 import { run } from '../../../bundler';
-import { FS } from '../../../services/fs/fs';
-import { Broadcaster } from '../../../services/broadcaster/broadcaster';
-import Loader from '../../../components/loader/loader';
+import { FS } from '@hackbox/services/fs/fs';
+import { Broadcaster } from '@hackbox/services/broadcaster/broadcaster';
+import Loader from '@hackbox/components/loader/loader';
 import ErrorOverlay from '../../components/error-overlay/error-overlay';
 import { ThemeProvider, Box } from '@chakra-ui/core';
 

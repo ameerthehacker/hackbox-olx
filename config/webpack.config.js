@@ -158,15 +158,15 @@ module.exports = function(webpackEnv) {
       // require.resolve('webpack-dev-server/client') + '?/',
       // require.resolve('webpack/hot/dev-server'),
       // Finally, this is your app's code:
-      main: [
-        isEnvDevelopment &&
-          require.resolve('react-dev-utils/webpackHotDevClient'),
-        paths.appIndexJs
-      ].filter(Boolean),
       preview: [
         isEnvDevelopment &&
           require.resolve('react-dev-utils/webpackHotDevClient'),
         paths.previewIndexJs
+      ].filter(Boolean),
+      main: [
+        isEnvDevelopment &&
+          require.resolve('react-dev-utils/webpackHotDevClient'),
+        paths.appIndexJs
       ].filter(Boolean)
       // We include the app code last so that if there is a runtime error during
       // initialization, it doesn't blow up the WebpackDevServer client, and
@@ -181,7 +181,7 @@ module.exports = function(webpackEnv) {
       // In development, it does not produce real files.
       filename: isEnvProduction
         ? 'static/js/[name].[contenthash:8].js'
-        : isEnvDevelopment && 'static/js/bundle.js',
+        : isEnvDevelopment && 'static/js/[name].bundle.js',
       // TODO: remove this when upgrading to webpack 5
       futureEmitAssets: true,
       // There are also additional JS chunk files if you use code splitting.
@@ -356,7 +356,13 @@ module.exports = function(webpackEnv) {
         },
         {
           test: /\.worker\.js$/,
-          use: { loader: 'worker-loader' },
+          use: {
+            loader: 'worker-loader',
+            options: {
+              publicPath,
+              name: 'static/js/[name].[hash:8].[ext]'
+            }
+          },
           include: paths.appSrc
         },
         {
@@ -565,7 +571,20 @@ module.exports = function(webpackEnv) {
                   minifyURLs: true
                 }
               }
-            : undefined
+            : {
+                minify: {
+                  removeComments: true,
+                  collapseWhitespace: true,
+                  removeRedundantAttributes: true,
+                  useShortDoctype: true,
+                  removeEmptyAttributes: true,
+                  removeStyleLinkTypeAttributes: true,
+                  keepClosingSlash: true,
+                  minifyJS: true,
+                  minifyCSS: true,
+                  minifyURLs: true
+                }
+              }
         )
       ),
       // Inlines the webpack runtime script. This script is too small to warrant
