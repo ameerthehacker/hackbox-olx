@@ -126,7 +126,8 @@ describe('utils', () => {
         fileName: 'index.js',
         path: filePath,
         deps: [],
-        isLocalModule: true
+        isLocalModule: true,
+        usedBy: []
       });
     });
 
@@ -142,7 +143,8 @@ describe('utils', () => {
         canocialName: 'LODASH',
         path: filePath,
         deps: [],
-        isLocalModule: false
+        isLocalModule: false,
+        usedBy: []
       });
     });
   });

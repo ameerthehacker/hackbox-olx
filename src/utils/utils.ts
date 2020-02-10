@@ -91,7 +91,8 @@ export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
       ext,
       isLocalModule: true,
       path: filePath,
-      deps: []
+      deps: [],
+      usedBy: []
     };
   } else {
     // external modules are always refered from root
@@ -101,7 +102,8 @@ export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
       canocialName,
       isLocalModule: false,
       path: filePath,
-      deps: []
+      deps: [],
+      usedBy: []
     };
   }
 }

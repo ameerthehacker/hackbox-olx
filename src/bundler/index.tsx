@@ -28,6 +28,7 @@ export interface ModuleMetaData {
   deps: ModuleMetaData[];
   isLocalModule?: boolean;
   exports?: ExportsMetaData;
+  usedBy: ModuleMetaData[];
 }
 
 export interface ExportsMetaData {
@@ -58,31 +59,29 @@ function module(HELLO) {
   }
 }
 */
-export async function buildExecutableModules(
+export async function buildExecutableModule(
   moduleMetaData: ModuleMetaData,
   fs: FS
-): Promise<ModuleDef> {
-  // check if it is local module like ./module.js
-  if (moduleMetaData.isLocalModule) {
-    let fileContent = '';
+): Promise<{ moduleDef: ModuleDef; hydratedModuleMetaData: ModuleMetaData }> {
+  let fileContent = '';
 
-    try {
-      fileContent = await fs.readFile(moduleMetaData.path);
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        throw new Error(`module ${moduleMetaData.path} does not exists`);
-      } else {
-        throw err;
-      }
+  try {
+    fileContent = await fs.readFile(moduleMetaData.path);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(`module ${moduleMetaData.path} does not exists`);
+    } else {
+      throw err;
     }
+  }
 
-    /* eslint-disable prefer-const */
-    let {
-      transformedCode,
-      hydratedModuleMetaData
-    } = await babelWorker.babelTransform(fileContent, moduleMetaData);
+  /* eslint-disable prefer-const */
+  let {
+    transformedCode,
+    hydratedModuleMetaData
+  } = await babelWorker.babelTransform(fileContent, moduleMetaData);
 
-    /*
+  /*
     var hello$ = HELLO.default;
 
     hello$();
@@ -103,25 +102,25 @@ export async function buildExecutableModules(
       get default() { return myHello; }
     }
     */
-    const exports = [];
+  const exports = [];
 
-    for (const exportKey in hydratedModuleMetaData.exports) {
-      const exportedRef = hydratedModuleMetaData.exports[exportKey];
+  for (const exportKey in hydratedModuleMetaData.exports) {
+    const exportedRef = hydratedModuleMetaData.exports[exportKey];
 
-      if (exportedRef && exportedRef.trim().length > 0) {
-        exports.push(`get ${exportKey}() { return ${exportedRef}; }`);
-      }
+    if (exportedRef && exportedRef.trim().length > 0) {
+      exports.push(`get ${exportKey}() { return ${exportedRef}; }`);
     }
+  }
 
-    const returnValue = `{${exports.join(',')}}`;
-    /*
+  const returnValue = `{${exports.join(',')}}`;
+  /*
       return {
         get default() { return hello; }
       }
     */
-    transformedCode += `;return ${returnValue};`;
+  transformedCode += `;return ${returnValue};`;
 
-    /*
+  /*
     var hello$ = HELLO.default();
 
     hello$();
@@ -146,6 +145,25 @@ export async function buildExecutableModules(
       }
     }
     */
+  const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
+  const moduleDef: ModuleDef = {
+    module: new Function(...depArgs, transformedCode),
+    deps: depArgs
+  };
+
+  return { moduleDef, hydratedModuleMetaData };
+}
+
+export async function buildExecutableModules(
+  moduleMetaData: ModuleMetaData,
+  fs: FS
+): Promise<ModuleDef> {
+  // check if it is local module like ./module.js
+  if (moduleMetaData.isLocalModule) {
+    const { hydratedModuleMetaData, moduleDef } = await buildExecutableModule(
+      moduleMetaData,
+      fs
+    );
     // build the executable modules of all the dependencies first
     for (const dep of hydratedModuleMetaData.deps) {
       // check if the module is already built or not
@@ -155,11 +173,6 @@ export async function buildExecutableModules(
       }
     }
 
-    const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
-    const moduleDef: ModuleDef = {
-      module: new Function(...depArgs, transformedCode),
-      deps: depArgs
-    };
     // add module to the code cache
     cache.set(hydratedModuleMetaData.canocialName, moduleDef);
 
@@ -238,4 +251,15 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
   const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);
   // now all the transformed files are in the cache and we can run the entry module
   runModule(entryModuleDef);
+}
+
+export async function update(fileName: string, fs: FS): Promise<void> {
+  const canoncialName = getModuleMetaData(fileName).canocialName;
+  const moduleCache = ModuleCache.getInstance();
+  // build the affected modules
+  const moduleDef = moduleCache.get(canoncialName);
+
+  if (moduleDef === null || moduleDef === undefined) {
+    throw new Error(`module ${canoncialName} could not be found`);
+  }
 }

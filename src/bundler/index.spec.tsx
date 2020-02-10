@@ -137,8 +137,14 @@ something$();`;
     });
 
     expect(someFileMetaData.deps).toEqual([
-      getModuleMetaData('./modules/dep1'),
-      getModuleMetaData('./modules/dep2')
+      {
+        ...getModuleMetaData('./modules/dep1'),
+        usedBy: [someFileMetaData]
+      },
+      {
+        ...getModuleMetaData('./modules/dep2'),
+        usedBy: [someFileMetaData]
+      }
     ]);
   });
 
@@ -157,6 +163,20 @@ something$();`;
       value: 'value',
       otherValue: 'renamedValue'
     });
+  });
+
+  it('should return the usedBy as array', () => {
+    const code = `import welcome from './welcome.js'
+    const counter = 10, value = 2, renamedValue = 3;
+    export { value, renamedValue as otherValue };
+    export default counter;`;
+
+    transform(code, {
+      presets: ['es2017'],
+      plugins: [babelPlugin(someFileMetaData)]
+    });
+
+    expect(someFileMetaData.deps[0].usedBy).toEqual([someFileMetaData]);
   });
 
   it('should return the inline default export function', () => {

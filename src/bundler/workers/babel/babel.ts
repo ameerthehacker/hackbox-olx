@@ -33,7 +33,9 @@ export function babelPlugin(
             path.node.source.value,
             containingDirectoryName
           );
-          fileMetaData.deps?.push(depMetaData);
+          // update the dep's usedBy metadata
+          depMetaData.usedBy.push(fileMetaData);
+          fileMetaData.deps.push(depMetaData);
 
           // check if there are any default imports
           const defaultImport = path.node.specifiers.find(
