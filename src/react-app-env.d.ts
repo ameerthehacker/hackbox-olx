@@ -34,12 +34,12 @@ declare module '*.png' {
   export default src;
 }
 
-declare module '*.webp' {
+declare module '*.webp.ts' {
   const src: string;
   export default src;
 }
 
-declare module 'worker-loader!*' {
+declare module '*.worker.ts' {
   class WebpackWorker extends Worker {
     constructor();
   }

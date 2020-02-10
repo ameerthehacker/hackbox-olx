@@ -20,7 +20,7 @@ import Loader from '@hackbox/components/loader/loader';
 
 interface SideBarSection {
   icon: IconType;
-  Elem: LazyExoticComponent<any>;
+  Elem: LazyExoticComponent<(props: any) => ReactElement>;
   props?: FileExplorerProps;
 }
 

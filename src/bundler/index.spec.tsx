@@ -1,29 +1,60 @@
 import { transform } from '@babel/standalone';
 import { buildExecutableModules, run } from './index';
-import { babelPlugin, babelTransform } from './workers/babel.worker';
+import { babelPlugin } from './workers/babel/babel';
 import { ModuleMetaData } from '../bundler';
 import { getModuleMetaData } from '../utils/utils';
 import { FS } from '../services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
-import * as comlink from 'comlink';
 
-/* eslint-disable @typescript-eslint/no-empty-function */
-jest.mock('comlink', (): { wrap: () => void; expose: () => void } => ({
-  wrap: (): void => {},
-  expose: (): void => {}
-}));
+type BabelTransformType = (
+  fileContent: string,
+  moduleMetaData: ModuleMetaData
+) => Promise<{
+  transformedCode: string;
+  hydratedModuleMetaData: ModuleMetaData;
+}>;
 
-let someFileMetaData: ModuleMetaData;
+type ComLinkType = {
+  wrap(worker: {
+    URL: string;
+  }): { babelTransform: BabelTransformType } | undefined;
+  expose(): void;
+};
 
 // jest does not support web workers so we need to simulate it
-comlink.wrap = (worker: Worker) => {
-  if (worker.URL.includes('babel.ts')) {
+/* eslint-disable @typescript-eslint/no-empty-function */
+jest.mock(
+  'comlink',
+  (): ComLinkType => {
     return {
-      babelTransform: (filecontent: string, moduleMetaData: ModuleMetaData) =>
-        Promise.resolve(babelTransform(filecontent, moduleMetaData))
+      wrap: (worker: {
+        URL: string;
+      }): { babelTransform: BabelTransformType } | undefined => {
+        /* eslint-disable @typescript-eslint/no-var-requires */
+        const {
+          babelTransform
+        }: {
+          babelTransform: BabelTransformType;
+        } = require('./workers/babel/babel');
+
+        if (worker.URL.includes('babel.worker.ts')) {
+          return {
+            babelTransform: (
+              filecontent: string,
+              moduleMetaData: ModuleMetaData
+            ): Promise<{
+              transformedCode: string;
+              hydratedModuleMetaData: ModuleMetaData;
+            }> => Promise.resolve(babelTransform(filecontent, moduleMetaData))
+          };
+        }
+      },
+      expose: (): void => {}
     };
   }
-};
+);
+
+let someFileMetaData: ModuleMetaData;
 
 describe('Babel plugin', () => {
   beforeEach(() => {
@@ -38,10 +69,11 @@ describe('Babel plugin', () => {
     const expectedTransformedCode = `var welcome$ = WELCOME.___default;
 welcome$();`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });
@@ -51,10 +83,11 @@ welcome$();`;
     const code = `import counter from './counter.js'`;
     const expectedTransformedCode = `var counter$ = COUNTER.___default;`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });
@@ -66,10 +99,11 @@ welcome$();`;
     const expectedTransformedCode = `var welcome$ = WELCOME.welcome;
 welcome$();`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });
@@ -81,10 +115,11 @@ welcome$();`;
     const expectedTransformedCode = `var something$ = WELCOME.welcome;
 something$();`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });
@@ -142,10 +177,11 @@ something$();`;
     export default counter;`;
     const expectedTransformedCode = `const counter = 10;`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });
@@ -156,10 +192,11 @@ something$();`;
   console.log('ha ha');
 };`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });
@@ -169,10 +206,11 @@ something$();`;
     export { counter };`;
     const expectedTransformedCode = `const counter = 10;`;
 
-    const transformedCode = transform(code, {
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const transformedCode = (transform(code, {
       presets: ['es2017'],
       plugins: [babelPlugin(someFileMetaData)]
-    }).code;
+    }) as any).code;
 
     expect(transformedCode).toBe(expectedTransformedCode);
   });

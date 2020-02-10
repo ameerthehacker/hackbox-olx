@@ -1,7 +1,6 @@
-import { ModuleMetaData } from '..';
+import { ModuleMetaData } from '@hackbox/bundler';
 import { transform } from '@babel/standalone';
-import { getModuleMetaData, getDirectoryName } from '../../utils/utils';
-import * as comlink from 'comlink';
+import { getModuleMetaData, getDirectoryName } from '../../../utils/utils';
 import {
   FunctionExpression,
   Identifier,
@@ -192,7 +191,3 @@ export function babelTransform(
     hydratedModuleMetaData: moduleMetaData
   };
 }
-
-comlink.expose({
-  babelTransform
-});

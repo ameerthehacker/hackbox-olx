@@ -6,7 +6,7 @@ module.exports = {
       __esModule: true,
       default: class Worker {
         constructor() {
-          this.URL = ${filename};
+          this.URL = "${filename}";
         }
       }
     }`;

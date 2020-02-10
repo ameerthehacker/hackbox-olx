@@ -147,10 +147,10 @@
     ],
     "testEnvironment": "jest-environment-jsdom-fourteen",
     "transform": {
+      "^.+\\.(worker\\.ts)$": "<rootDir>/config/jest/workerTransform.js",
       "^.+\\.(js|jsx|ts|tsx)$": "<rootDir>/node_modules/babel-jest",
       "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js",
-      "worker-loader!./workers/babel.worker.ts": "<rootDir>/config/jest/workerTransform.js"
+      "^(?!.*\\.(js|jsx|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
     },
     "transformIgnorePatterns": [
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$",
