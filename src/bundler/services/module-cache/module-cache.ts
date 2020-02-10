@@ -1,15 +1,15 @@
-import { ModuleDef } from '../../index';
+import { ModuleDef } from '@hackbox/bundler';
 
-export class CodeCache {
-  private static instance: CodeCache;
+export class ModuleCache {
+  private static instance: ModuleCache;
 
   private constructor(
     private cache: { [key: string]: null | ModuleDef } = {}
   ) {}
 
-  public static getInstance(): CodeCache {
+  public static getInstance(): ModuleCache {
     if (this.instance == null) {
-      this.instance = new CodeCache();
+      this.instance = new ModuleCache();
     }
 
     return this.instance;

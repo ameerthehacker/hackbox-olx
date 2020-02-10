@@ -1,10 +1,10 @@
 import { getModuleMetaData } from '@hackbox/utils/utils';
 import { FS } from '@hackbox/services/fs/fs';
-import { CodeCache } from './services/code-cache/code-cache';
+import { ModuleCache } from './services/module-cache/module-cache';
 import * as comlink from 'comlink';
 import BabelWorker from 'worker-loader!./workers/babel/babel.worker.ts';
 
-const cache = CodeCache.getInstance();
+const cache = ModuleCache.getInstance();
 
 // we should not add this to the render function as it will be downloaded during every render
 const babelWorker = comlink.wrap<{
@@ -16,6 +16,7 @@ const babelWorker = comlink.wrap<{
 
 export interface ModuleDef {
   module: Function;
+  exportedRef?: ExportsMetaData;
   deps: string[];
 }
 
@@ -210,18 +211,28 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
     const depModuleDef = cache.get(dep);
 
     if (depModuleDef) {
-      const depRef = runModule(depModuleDef);
+      if (depModuleDef.exportedRef == undefined) {
+        const depRef = runModule(depModuleDef);
 
-      depRefs.push(depRef);
+        depRefs.push(depRef);
+      } else {
+        const depRef = depModuleDef.exportedRef;
+
+        depRefs.push(depRef);
+      }
     }
   }
 
-  return moduleDef.module(...depRefs);
+  const exportedRef = moduleDef.module(...depRefs);
+  // update the module definition with exported reference
+  moduleDef.exportedRef = exportedRef;
+
+  return exportedRef;
 }
 
 export async function run(fs: FS, entryFile: string): Promise<void> {
   // clear the cache
-  CodeCache.getInstance().reset();
+  ModuleCache.getInstance().reset();
   const entryFileMetaData = getModuleMetaData(entryFile);
   // build all the executable modules
   const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);

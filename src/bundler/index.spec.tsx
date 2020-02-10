@@ -4,7 +4,7 @@ import { babelPlugin } from './workers/babel/babel';
 import { ModuleMetaData } from '../bundler';
 import { getModuleMetaData } from '../utils/utils';
 import { FS } from '../services/fs/fs';
-import { CodeCache } from './services/code-cache/code-cache';
+import { ModuleCache } from './services/module-cache/module-cache';
 
 type BabelTransformType = (
   fileContent: string,
@@ -261,7 +261,7 @@ describe('buildExecutableModule()', () => {
       './hello.js': `import welcome from './welcome.js';
       welcome();`
     };
-    const cache = CodeCache.getInstance();
+    const cache = ModuleCache.getInstance();
     const fs = new FS(files);
     const entryModule = (
       await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
@@ -280,11 +280,11 @@ describe('buildExecutableModule()', () => {
   });
 });
 
-describe('runModule', () => {
+describe('run()', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     // reset the cache
-    CodeCache.getInstance().reset();
+    ModuleCache.getInstance().reset();
   });
 
   it('should run the modules with default imports, exports', async () => {
@@ -302,6 +302,22 @@ describe('runModule', () => {
     expect(console.info).toHaveBeenCalledWith(
       'hello from default import/export modules'
     );
+  });
+
+  it('should evaluate the module only once', async () => {
+    const files = {
+      './use-hello1.js': `import hello from './hello.js';
+                          import something from './components/use-hello2.js'`,
+      './components/use-hello2.js': `import hello from '../hello.js';`,
+      './hello.js': `console.info("Hi I'm hello.js")`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './use-hello1.js');
+
+    expect(console.info).toHaveBeenCalledWith("Hi I'm hello.js");
+    expect(console.info).toHaveBeenCalledTimes(1);
   });
 
   it('should run the modules with named imports, exports', async () => {
