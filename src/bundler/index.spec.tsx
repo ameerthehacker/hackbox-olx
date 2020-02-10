@@ -66,7 +66,7 @@ describe('Babel plugin', () => {
     const code = `import welcome from './welcome';
     welcome();
     `;
-    const expectedTransformedCode = `var welcome$ = WELCOME.___default;
+    const expectedTransformedCode = `var welcome$ = WELCOME.default;
 welcome$();`;
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -81,7 +81,7 @@ welcome$();`;
   it('it should replace the import by variable declaration', () => {
     const someFileMetaData = getModuleMetaData('./hello.js');
     const code = `import counter from './counter.js'`;
-    const expectedTransformedCode = `var counter$ = COUNTER.___default;`;
+    const expectedTransformedCode = `var counter$ = COUNTER.default;`;
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const transformedCode = (transform(code, {
@@ -153,7 +153,7 @@ something$();`;
     });
 
     expect(someFileMetaData.exports).toEqual({
-      ___default: 'counter',
+      default: 'counter',
       value: 'value',
       otherValue: 'renamedValue'
     });
@@ -168,7 +168,7 @@ something$();`;
     });
 
     expect(someFileMetaData.exports).toEqual({
-      ___default: '_defaultExportFunc'
+      default: '_defaultExportFunc'
     });
   });
 
@@ -249,7 +249,7 @@ describe('buildExecutableModule()', () => {
     console.info = jest.fn();
     const exports = module();
     // try running the default export
-    exports.___default();
+    exports.default();
 
     expect(console.info).toHaveBeenCalledWith('hello from export');
   });

@@ -31,7 +31,7 @@ export interface ModuleMetaData {
 
 export interface ExportsMetaData {
   [name: string]: string;
-  ___default: string;
+  default: string;
 }
 
 /*
@@ -46,12 +46,14 @@ export default myHello;
 above code is transformed into
 ==============================
 function module(HELLO) {
-  var hello$ = HELLO.___default();
+  var hello$ = HELLO.default;
+
+  hello$();
 
   function myHello() { console.log('my hello func') }
 
   return {
-    ___default: myHello
+    get default() { return myHello; }
   }
 }
 */
@@ -80,20 +82,24 @@ export async function buildExecutableModules(
     } = await babelWorker.babelTransform(fileContent, moduleMetaData);
 
     /*
-    var hello$ = HELLO.___default();
+    var hello$ = HELLO.default;
+
+    hello$();
   
-    function hello() { console.log('hello world'); }
+    function myHello() { console.log('hello world'); }
   
-    export default hello;
+    export default myHello;
     ==============================
     above code is transformed into
     ==============================
-    var hello$ = HELLO.___default();
+    var hello$ = HELLO.default;
+
+    hello$();
   
-    function hello() { console.log('hello world'); }
+    function myHello() { console.log('hello world'); }
     
     return {
-      ___default: hello
+      get default() { return myHello; }
     }
     */
     const exports = [];
@@ -102,37 +108,40 @@ export async function buildExecutableModules(
       const exportedRef = hydratedModuleMetaData.exports[exportKey];
 
       if (exportedRef && exportedRef.trim().length > 0) {
-        exports.push(
-          `${exportKey}: ${hydratedModuleMetaData.exports[exportKey]}`
-        );
+        exports.push(`get ${exportKey}() { return ${exportedRef}; }`);
       }
     }
+
     const returnValue = `{${exports.join(',')}}`;
     /*
       return {
-        ___default: hello
+        get default() { return hello; }
       }
     */
     transformedCode += `;return ${returnValue};`;
 
     /*
-    var hello$ = HELLO.___default();
+    var hello$ = HELLO.default();
+
+    hello$();
   
-    function hello() { console.log('hello world'); }
+    function myHello() { console.log('hello world'); }
     
     return {
-      ___default: hello
+      get default() { return hello; }
     }
     ==============================
     above code is transformed into
     ==============================
     function(HELLO) {
-      var hello$ = HELLO.___default();
-  
-      function hello() { console.log('hello world'); }
+      var hello$ = HELLO.default();
+
+      hello$();
     
+      function myHello() { console.log('hello world'); }
+      
       return {
-        ___default: hello
+        get default() { return hello; }
       }
     }
     */
@@ -178,7 +187,7 @@ export async function buildExecutableModules(
       }
 
       return {
-        ___default: externalModule.default.default || externalModule.default,
+        default: externalModule.default.default || externalModule.default,
         ...externalModule.default
       };
     };

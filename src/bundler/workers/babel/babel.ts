@@ -48,7 +48,7 @@ export function babelPlugin(
           ==============================
           above code is transformed into
           ==============================
-          var hello$ = HELLO.___default;
+          var hello$ = HELLO.default;
           
           hello$();
           */
@@ -57,7 +57,7 @@ export function babelPlugin(
 
             path.scope.push({
               id: types.identifier(localVariableName),
-              init: types.identifier(`${depMetaData.canocialName}.___default`)
+              init: types.identifier(`${depMetaData.canocialName}.default`)
             });
 
             path.scope.rename(defaultImport.local.name, localVariableName);
@@ -99,14 +99,14 @@ export function babelPlugin(
         ExportDefaultDeclaration(path: any): void {
           if (fileMetaData.exports === undefined) {
             fileMetaData.exports = {
-              ___default: ''
+              default: ''
             };
           }
 
           const declaration = path.node.declaration;
 
           if (declaration.type === 'Identifier') {
-            fileMetaData.exports.___default = path.node.declaration.name;
+            fileMetaData.exports.default = path.node.declaration.name;
           } else if (declaration.type === 'FunctionDeclaration') {
             const uid = path.scope.generateUidIdentifier('defaultExportFunc');
 
@@ -121,7 +121,7 @@ export function babelPlugin(
               )
             });
 
-            fileMetaData.exports.___default = uid.name;
+            fileMetaData.exports.default = uid.name;
           }
           /*
           function hello() {
@@ -141,7 +141,7 @@ export function babelPlugin(
         ExportNamedDeclaration(path: any): void {
           if (fileMetaData.exports === undefined) {
             fileMetaData.exports = {
-              ___default: ''
+              default: ''
             };
           }
           // check if there are any named exports and transform them
