@@ -159,7 +159,8 @@
     "modulePaths": [],
     "moduleNameMapper": {
       "^@hackbox(.*)$": "<rootDir>/src$1",
-      "^react-native$": "react-native-web"
+      "^react-native$": "react-native-web",
+      "^worker-loader!(.*)$": "$1"
     },
     "moduleFileExtensions": [
       "web.js",

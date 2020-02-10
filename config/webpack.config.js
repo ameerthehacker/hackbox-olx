@@ -360,7 +360,6 @@ module.exports = function(webpackEnv) {
           use: {
             loader: 'worker-loader',
             options: {
-              publicPath,
               name: 'static/js/[name].[hash:8].[ext]'
             }
           },

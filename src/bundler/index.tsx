@@ -2,7 +2,7 @@ import { getModuleMetaData } from '@hackbox/utils/utils';
 import { FS } from '@hackbox/services/fs/fs';
 import { CodeCache } from './services/code-cache/code-cache';
 import * as comlink from 'comlink';
-import BabelWorker from './workers/babel/babel.worker.ts';
+import BabelWorker from 'worker-loader!./workers/babel/babel.worker.ts';
 
 const cache = CodeCache.getInstance();
 
