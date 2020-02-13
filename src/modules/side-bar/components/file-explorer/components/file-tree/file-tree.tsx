@@ -4,8 +4,7 @@ import React, {
   lazy,
   LazyExoticComponent,
   SVGProps,
-  FC,
-  useMemo
+  FC
 } from 'react';
 import { Tree, TreeItem } from '../tree/tree';
 import { getFileExt } from '@hackbox/utils/utils';
@@ -22,18 +21,29 @@ export interface FileTreeProps {
   onSelected: (path: string) => void;
 }
 
+// lazy loaded folder icons
+const DefaultFolderSvg = lazy(() =>
+  import(/* webpackPrefetch: true */ './images/default-folder.svg')
+);
+const DefaultFolderOpenSvg = lazy(() =>
+  import(/* webpackPrefetch: true */ './images/default-folder-open.svg')
+);
+const JSFileSvg = lazy(() => import('./images/js.svg'));
+const CSFileSvg = lazy(() => import('./images/css.svg'));
+const DefaultFileSvg = lazy(() => import('./images/default-file.svg'));
+
 export function getFileIcon(
   fileName: string
 ): LazyExoticComponent<FC<SVGProps<SVGSVGElement>>> {
   switch (getFileExt(fileName)) {
     case 'js': {
-      return useMemo(() => lazy(() => import('./images/js.svg')), []);
+      return JSFileSvg;
     }
     case 'css': {
-      return useMemo(() => lazy(() => import('./images/css.svg')), []);
+      return CSFileSvg;
     }
     default:
-      return useMemo(() => lazy(() => import('./images/default-file.svg')), []);
+      return DefaultFileSvg;
   }
 }
 
@@ -45,21 +55,6 @@ export function FileTree({
 }: FileTreeProps): ReactElement {
   const directories = fs?.getDirectoriesInPath(path) || [];
   const files = fs?.getFilesInPath(path) || [];
-  // lazy loaded folder icons
-  const DefaultFolderSvg = useMemo(
-    () =>
-      lazy(() =>
-        import(/* webpackPrefetch: true */ './images/default-folder.svg')
-      ),
-    []
-  );
-  const DefaultFolderOpenSvg = useMemo(
-    () =>
-      lazy(() =>
-        import(/* webpackPrefetch: true */ './images/default-folder-open.svg')
-      ),
-    []
-  );
 
   const defaultExpandIcon = (
     <Flex alignItems="center">
