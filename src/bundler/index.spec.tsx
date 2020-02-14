@@ -1,9 +1,9 @@
 import { transform } from '@babel/standalone';
-import { buildExecutableModules, run } from './index';
+import { buildExecutableModules, run, update } from '@hackbox/bundler';
 import { babelPlugin } from './workers/babel/babel';
-import { ModuleMetaData } from '../bundler';
-import { getModuleMetaData } from '../utils/utils';
-import { FS } from '../services/fs/fs';
+import { ModuleMetaData } from '@hackbox/bundler';
+import { getModuleMetaData } from '@hackbox/utils/utils';
+import { FS } from '@hackbox/services/fs/fs';
 import { ModuleCache } from './services/module-cache/module-cache';
 
 type BabelTransformType = (
@@ -389,5 +389,38 @@ describe('run()', () => {
     expect(console.info).toHaveBeenCalledWith(
       'hello from renamed exports modules'
     );
+  });
+});
+
+describe('update()', () => {
+  it('should run the modules with renamed exports', async () => {
+    const files = {
+      './welcome.js': `function welcome() { console.info('hello from renamed exports modules') }
+      export { welcome as something };`,
+      './something.js': `console.info('I do nothing');
+      export default null;`,
+      './hello.js': `import { something as hello } from './welcome.js';
+      import nothing from './something.js';
+      hello();`
+    };
+    const fs = new FS(files);
+
+    await run(fs, './hello.js');
+
+    console.info = jest.fn();
+
+    // update the file
+    await fs.writeFile(
+      './welcome.js',
+      `function welcome() { console.info('hello from updated exports modules') }
+    export { welcome as something };`
+    );
+
+    await update(fs, './hello.js', './welcome.js');
+
+    expect(console.info).toHaveBeenCalledWith(
+      'hello from updated exports modules'
+    );
+    expect(console.info).not.toHaveBeenCalledWith('I do nothing');
   });
 });

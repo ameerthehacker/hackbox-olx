@@ -76,7 +76,7 @@ ReactDOM.render(App, document.getElementById('output'));
   const broadcaster = Broadcaster.getInstance();
 
   broadcaster.listen('PREVIEW_READY', () => {
-    broadcaster.broadcast('FS_UPDATE', {
+    broadcaster.broadcast('FS_INIT', {
       fsJSON: DEV_FILES,
       entry: './index.js'
     });

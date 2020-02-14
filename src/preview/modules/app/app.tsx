@@ -1,7 +1,11 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { run } from '../../../bundler';
+import { run, update } from '@hackbox/bundler';
 import { FS } from '@hackbox/services/fs/fs';
-import { Broadcaster } from '@hackbox/services/broadcaster/broadcaster';
+import {
+  Broadcaster,
+  FileInit,
+  FileUpdate
+} from '@hackbox/services/broadcaster/broadcaster';
 import Loader from '@hackbox/components/loader/loader';
 import ErrorOverlay from '../../components/error-overlay/error-overlay';
 import { ThemeProvider, Box } from '@chakra-ui/core';
@@ -15,11 +19,26 @@ export default function App(): ReactElement | null {
 
   useEffect(() => {
     // tell UI that you are ready
-    broadcaster.broadcast('PREVIEW_READY', {});
-    broadcaster.listen('FS_UPDATE', (evt: MessageEvent) => {
-      fs.importFromJSON(evt.data.message.fsJSON);
+    broadcaster.broadcast('PREVIEW_READY', null);
+    broadcaster.listen('FS_INIT', (evt) => {
+      fs.importFromJSON((evt as FileInit).fsJSON);
 
-      run(fs, evt.data.message.entry)
+      run(fs, evt.entry)
+        .then(() => {
+          setError(null);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setError(`${err}`);
+        });
+    });
+
+    broadcaster.listen('FS_UPDATE', async (evt) => {
+      const { entry, updatedFile, updatedFileContent } = evt as FileUpdate;
+
+      await fs.writeFile(updatedFile, updatedFileContent);
+
+      update(fs, entry, updatedFile)
         .then(() => {
           setError(null);
           setIsLoading(false);

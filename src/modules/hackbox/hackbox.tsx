@@ -44,7 +44,8 @@ export default function Hackbox(): ReactElement {
       fs?.writeFile(selectedFile, newCode).then(() => {
         broadcaster.broadcast('FS_UPDATE', {
           entry: './index.js',
-          fsJSON: fs.exportToJSON()
+          updatedFile: selectedFile,
+          updatedFileContent: newCode
         });
       });
     }

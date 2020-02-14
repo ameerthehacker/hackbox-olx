@@ -1,4 +1,15 @@
-type EVENTS = 'FS_UPDATE' | 'PREVIEW_READY';
+type EVENTS = 'FS_UPDATE' | 'PREVIEW_READY' | 'FS_INIT';
+
+export interface FileUpdate {
+  entry: string;
+  updatedFile: string;
+  updatedFileContent: string;
+}
+
+export interface FileInit {
+  fsJSON: { [key: string]: string };
+  entry: string;
+}
 
 export class Broadcaster {
   private static instance: Broadcaster;
@@ -13,17 +24,20 @@ export class Broadcaster {
     return this.instance;
   }
 
-  public broadcast(event: EVENTS, message: string | object): void {
+  public broadcast(
+    event: EVENTS,
+    message: string | FileUpdate | FileInit | null
+  ): void {
     this.bc.postMessage({
       type: event,
       message
     });
   }
 
-  public listen(event: EVENTS, cb: (evt: MessageEvent) => void): void {
+  public listen(event: EVENTS, cb: (evt: FileUpdate | FileInit) => void): void {
     this.bc.addEventListener('message', (evt) => {
       if (evt.data.type === event) {
-        cb(evt);
+        cb(evt.data.message);
       }
     });
   }

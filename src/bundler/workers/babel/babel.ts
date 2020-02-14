@@ -34,8 +34,22 @@ export function babelPlugin(
             containingDirectoryName
           );
           // update the dep's usedBy metadata
-          depMetaData.usedBy.push(fileMetaData);
-          fileMetaData.deps.push(depMetaData);
+          if (
+            !fileMetaData.deps.find(
+              (dep) => dep.canocialName === depMetaData.canocialName
+            )
+          ) {
+            fileMetaData.deps.push(depMetaData);
+          }
+          // update the dep metadata
+          if (
+            !depMetaData.usedBy.find(
+              (usedByModule) =>
+                usedByModule.canocialName === fileMetaData.canocialName
+            )
+          ) {
+            depMetaData.usedBy.push(fileMetaData);
+          }
 
           // check if there are any default imports
           const defaultImport = path.node.specifiers.find(

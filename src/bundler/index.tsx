@@ -4,7 +4,7 @@ import { ModuleCache } from './services/module-cache/module-cache';
 import * as comlink from 'comlink';
 import BabelWorker from 'worker-loader!./workers/babel/babel.worker.ts';
 
-const cache = ModuleCache.getInstance();
+const moduleCache = ModuleCache.getInstance();
 
 // we should not add this to the render function as it will be downloaded during every render
 const babelWorker = comlink.wrap<{
@@ -18,6 +18,7 @@ export interface ModuleDef {
   module: Function;
   exportedRef?: ExportsMetaData;
   deps: string[];
+  metaData: ModuleMetaData;
 }
 
 export interface ModuleMetaData {
@@ -148,7 +149,8 @@ export async function buildExecutableModule(
   const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
   const moduleDef: ModuleDef = {
     module: new Function(...depArgs, transformedCode),
-    deps: depArgs
+    deps: depArgs,
+    metaData: hydratedModuleMetaData
   };
 
   return { moduleDef, hydratedModuleMetaData };
@@ -167,27 +169,21 @@ export async function buildExecutableModules(
     // build the executable modules of all the dependencies first
     for (const dep of hydratedModuleMetaData.deps) {
       // check if the module is already built or not
-      if (!cache.get(dep.canocialName)) {
+      if (!moduleCache.get(dep.canocialName)) {
         // transform that dependency and cache it
         await buildExecutableModules(dep, fs);
       }
     }
 
     // add module to the code cache
-    cache.set(hydratedModuleMetaData.canocialName, moduleDef);
+    moduleCache.set(hydratedModuleMetaData.canocialName, moduleDef);
 
     return moduleDef;
   } else {
-    if (cache.get(moduleMetaData.canocialName)) {
-      /* eslint-ignore @typescript-eslint/no-empty-function */
-      return (
-        cache.get(moduleMetaData.canocialName) || {
-          module: (): void => {
-            throw new Error('cache was not expected contain a module def');
-          },
-          deps: []
-        }
-      );
+    const cachedModuleDef = moduleCache.get(moduleMetaData.canocialName);
+
+    if (cachedModuleDef !== null && cachedModuleDef !== undefined) {
+      return cachedModuleDef;
     }
 
     // it is an external module like lodash
@@ -208,10 +204,11 @@ export async function buildExecutableModules(
 
     const moduleDef: ModuleDef = {
       module,
-      deps: []
+      deps: [],
+      metaData: moduleMetaData
     };
 
-    cache.set(moduleMetaData.canocialName, moduleDef);
+    moduleCache.set(moduleMetaData.canocialName, moduleDef);
 
     return moduleDef;
   }
@@ -221,10 +218,10 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
   const depRefs: ExportsMetaData[] = [];
 
   for (const dep of moduleDef.deps) {
-    const depModuleDef = cache.get(dep);
+    const depModuleDef = moduleCache.get(dep);
 
     if (depModuleDef) {
-      if (depModuleDef.exportedRef == undefined) {
+      if (depModuleDef.exportedRef === undefined) {
         const depRef = runModule(depModuleDef);
 
         depRefs.push(depRef);
@@ -253,13 +250,47 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
   runModule(entryModuleDef);
 }
 
-export async function update(fileName: string, fs: FS): Promise<void> {
-  const canoncialName = getModuleMetaData(fileName).canocialName;
-  const moduleCache = ModuleCache.getInstance();
-  // build the affected modules
-  const moduleDef = moduleCache.get(canoncialName);
+export async function update(
+  fs: FS,
+  entryFileName: string,
+  fileName: string
+): Promise<void> {
+  const updatedModuleMetaData = getModuleMetaData(fileName);
+  const updatedModuleCanocialName = updatedModuleMetaData.canocialName;
+  const entryModuleMetaData = getModuleMetaData(entryFileName);
+  // build the affected module
+  const oldModuleDef = moduleCache.get(updatedModuleCanocialName);
 
-  if (moduleDef === null || moduleDef === undefined) {
-    throw new Error(`module ${canoncialName} could not be found`);
+  if (oldModuleDef === null || oldModuleDef === undefined) {
+    throw new Error(`${updatedModuleMetaData.fileName} could not be found`);
+  }
+
+  const usedByModules = oldModuleDef.metaData.usedBy;
+  const { moduleDef: updatedModuleDef } = await buildExecutableModule(
+    oldModuleDef.metaData,
+    fs
+  );
+
+  // update the cache with new module metadata
+  moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
+
+  // this will force re-evaluation of all used by module
+  usedByModules.forEach(async (usedByModule) => {
+    const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
+
+    if (usedByModuleDef) {
+      // burst the exportRef cache
+      usedByModuleDef.exportedRef = undefined;
+    } else {
+      throw new Error(`${usedByModule.fileName} could not be found`);
+    }
+  });
+
+  const entryModuleDef = moduleCache.get(entryModuleMetaData.canocialName);
+  // run the entry module
+  if (entryModuleDef) {
+    runModule(entryModuleDef);
+  } else {
+    throw new Error(`${entryFileName} could not be found`);
   }
 }
