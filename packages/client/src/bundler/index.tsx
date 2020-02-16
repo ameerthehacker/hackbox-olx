@@ -275,7 +275,7 @@ export async function update(
   moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
 
   // this will force re-evaluation of all used by module
-  usedByModules.forEach(async (usedByModule) => {
+  usedByModules.forEach(async (usedByModule: ModuleMetaData) => {
     const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
 
     if (usedByModuleDef) {
