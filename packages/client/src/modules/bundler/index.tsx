@@ -37,6 +37,49 @@ export interface ExportsMetaData {
   default: string;
 }
 
+export async function buildCSSModule(
+  moduleMetaData: ModuleMetaData,
+  fs: FS
+): Promise<ModuleDef> {
+  let fileContent = '';
+
+  try {
+    fileContent = await fs.readFile(moduleMetaData.path);
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      throw new Error(`module ${moduleMetaData.path} does not exists`);
+    } else {
+      throw err;
+    }
+  }
+
+  const module = (): HTMLElement => {
+    let stylesheet = document.getElementById(moduleMetaData.canocialName);
+
+    if (!stylesheet) {
+      // create the stylesheet
+      stylesheet = document.createElement('style');
+      stylesheet.id = moduleMetaData.canocialName;
+      // attach it to head tag
+      document.head.appendChild(stylesheet);
+    }
+
+    stylesheet.innerText = fileContent;
+
+    return stylesheet;
+  };
+
+  const moduleDef: ModuleDef = {
+    deps: [],
+    metaData: moduleMetaData,
+    module
+  };
+
+  moduleCache.set(moduleMetaData.canocialName, moduleDef);
+
+  return moduleDef;
+}
+
 /*
 import hello from './hello.js';
 
@@ -156,7 +199,7 @@ export async function buildExecutableModule(
   return { moduleDef, hydratedModuleMetaData };
 }
 
-export async function buildExecutableModules(
+export async function buildModules(
   moduleMetaData: ModuleMetaData,
   fs: FS
 ): Promise<ModuleDef> {
@@ -171,7 +214,26 @@ export async function buildExecutableModules(
       // check if the module is already built or not
       if (!moduleCache.get(dep.canocialName)) {
         // transform that dependency and cache it
-        await buildExecutableModules(dep, fs);
+        if (!dep.isLocalModule && !dep.ext) {
+          // to handle external dependencies like react, vue
+          await buildModules(dep, fs);
+        } else {
+          switch (dep.ext) {
+            case 'css': {
+              await buildCSSModule(dep, fs);
+              break;
+            }
+            case 'js': {
+              await buildModules(dep, fs);
+              break;
+            }
+            default: {
+              throw new Error(
+                `no loader found for file ${moduleMetaData.fileName}`
+              );
+            }
+          }
+        }
       }
     }
 
@@ -245,7 +307,7 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
   ModuleCache.getInstance().reset();
   const entryFileMetaData = getModuleMetaData(entryFile);
   // build all the executable modules
-  const entryModuleDef = await buildExecutableModules(entryFileMetaData, fs);
+  const entryModuleDef = await buildModules(entryFileMetaData, fs);
   // now all the transformed files are in the cache and we can run the entry module
   runModule(entryModuleDef);
 }
@@ -258,33 +320,50 @@ export async function update(
   const updatedModuleMetaData = getModuleMetaData(fileName);
   const updatedModuleCanocialName = updatedModuleMetaData.canocialName;
   const entryModuleMetaData = getModuleMetaData(entryFileName);
-  // build the affected module
-  const oldModuleDef = moduleCache.get(updatedModuleCanocialName);
 
-  if (oldModuleDef === null || oldModuleDef === undefined) {
-    throw new Error(`${updatedModuleMetaData.fileName} could not be found`);
-  }
+  switch (updatedModuleMetaData.ext) {
+    case 'css': {
+      await buildCSSModule(updatedModuleMetaData, fs);
 
-  const usedByModules = oldModuleDef.metaData.usedBy;
-  const { moduleDef: updatedModuleDef } = await buildExecutableModule(
-    oldModuleDef.metaData,
-    fs
-  );
-
-  // update the cache with new module metadata
-  moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
-
-  // this will force re-evaluation of all used by module
-  usedByModules.forEach(async (usedByModule: ModuleMetaData) => {
-    const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
-
-    if (usedByModuleDef) {
-      // burst the exportRef cache
-      usedByModuleDef.exportedRef = undefined;
-    } else {
-      throw new Error(`${usedByModule.fileName} could not be found`);
+      break;
     }
-  });
+    case 'js': {
+      // build the affected module
+      const oldModuleDef = moduleCache.get(updatedModuleCanocialName);
+
+      if (oldModuleDef === null || oldModuleDef === undefined) {
+        throw new Error(`${updatedModuleMetaData.fileName} could not be found`);
+      }
+
+      const usedByModules = oldModuleDef.metaData.usedBy;
+      const { moduleDef: updatedModuleDef } = await buildExecutableModule(
+        oldModuleDef.metaData,
+        fs
+      );
+
+      // update the cache with new module metadata
+      moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
+
+      // this will force re-evaluation of all used by module
+      usedByModules.forEach(async (usedByModule: ModuleMetaData) => {
+        const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
+
+        if (usedByModuleDef) {
+          // burst the exportRef cache
+          usedByModuleDef.exportedRef = undefined;
+        } else {
+          throw new Error(`${usedByModule.fileName} could not be found`);
+        }
+      });
+
+      break;
+    }
+    default: {
+      throw new Error(
+        `no loader found for file ${updatedModuleMetaData.fileName}`
+      );
+    }
+  }
 
   const entryModuleDef = moduleCache.get(entryModuleMetaData.canocialName);
   // run the entry module

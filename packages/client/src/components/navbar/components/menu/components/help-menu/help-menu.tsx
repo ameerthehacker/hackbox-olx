@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { MenuButton, MenuList, Menu, Button, MenuItem } from '@chakra-ui/core';
 
-export default function HelpMenu() {
+export default function HelpMenu(): ReactElement {
   return (
     <Menu>
       <MenuButton as={Button} size="sm">
@@ -9,7 +9,7 @@ export default function HelpMenu() {
       </MenuButton>
       <MenuList placement="top-start">
         <MenuItem
-          onClick={() =>
+          onClick={(): Window | null =>
             window.open('https://github.com/ameerthehacker/hackbox/issues/new')
           }
         >

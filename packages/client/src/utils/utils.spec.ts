@@ -17,7 +17,7 @@ describe('utils', () => {
 
       const canocialName = getCanocialName(fileName);
 
-      expect(canocialName).toBe('COMPONENTS_NAV__BAR');
+      expect(canocialName).toBe('COMPONENTS_NAV_HIPEN_BAR_DOT_JS');
     });
 
     it('should give the same canocial name for different path', () => {
@@ -35,7 +35,7 @@ describe('utils', () => {
       const filePath = '../../services/auth.js';
       const cwd = './components/navbar';
 
-      const expectedCanocialName = 'SERVICES_AUTH';
+      const expectedCanocialName = 'SERVICES_AUTH_DOT_JS';
 
       expect(getCanocialName(filePath, cwd)).toBe(expectedCanocialName);
     });
@@ -122,7 +122,7 @@ describe('utils', () => {
 
       expect(fileMetaData).toEqual({
         ext: 'js',
-        canocialName: 'MODULES_SUB__MODULES_INDEX',
+        canocialName: 'MODULES_SUB_HIPEN_MODULES_INDEX_DOT_JS',
         fileName: 'index.js',
         path: filePath,
         deps: [],

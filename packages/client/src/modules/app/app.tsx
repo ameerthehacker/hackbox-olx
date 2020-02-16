@@ -52,6 +52,7 @@ export default function Counter() {
 import ReactDOM from 'react-dom';  
 import Counter from './components/counter.js';
 import hello from './hello.js';
+import './index.css';
 
 const App = (
   <>

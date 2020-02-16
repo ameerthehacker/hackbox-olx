@@ -52,14 +52,13 @@ export function getCanocialName(filePath: string, cwd = '.'): string {
   if (absoluteFilePathArr[0] === '.') {
     absoluteFilePathArr.splice(0, 1);
   }
-  // remove the extension from filename
-  absoluteFilePathArr[absoluteFilePathArr.length - 1] = getFileNameWithoutExt(
-    absoluteFilePathArr[absoluteFilePathArr.length - 1]
-  );
 
   // nav-bar -> NAV__BAR
   absoluteFilePathArr = absoluteFilePathArr.map((filePath) =>
-    filePath.replace('-', '__').toUpperCase()
+    filePath
+      .replace('-', '_HIPEN_')
+      .replace('.', '_DOT_')
+      .toUpperCase()
   );
 
   const canocialName = absoluteFilePathArr.join('_');

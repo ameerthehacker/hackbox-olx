@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { MenuButton, MenuList, Menu, Button, MenuItem } from '@chakra-ui/core';
 
-export default function FileMenu() {
+export default function FileMenu(): ReactElement {
   return (
     <Menu>
       <MenuButton as={Button} size="sm">

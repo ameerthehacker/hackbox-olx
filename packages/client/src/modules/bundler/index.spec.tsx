@@ -1,9 +1,5 @@
 import { transform } from '@babel/standalone';
-import {
-  buildExecutableModules,
-  run,
-  update
-} from '@hackbox/client/modules/bundler';
+import { buildModules, run, update } from '@hackbox/client/modules/bundler';
 import { babelPlugin } from './workers/babel/babel';
 import { ModuleMetaData } from '@hackbox/client/modules/bundler';
 import { getModuleMetaData } from '@hackbox/client/utils/utils';
@@ -85,7 +81,7 @@ welcome$();`;
   it('it should replace the import by variable declaration', () => {
     const someFileMetaData = getModuleMetaData('./hello.js');
     const code = `import counter from './counter.js'`;
-    const expectedTransformedCode = `var counter$ = COUNTER.default;`;
+    const expectedTransformedCode = `var counter$ = COUNTER_DOT_JS.default;`;
 
     /* eslint-disable @typescript-eslint/no-explicit-any */
     const transformedCode = (transform(code, {
@@ -240,7 +236,7 @@ something$();`;
   });
 });
 
-describe('buildExecutableModule()', () => {
+describe('buildExecutableModules()', () => {
   beforeEach(() => {
     jest.resetAllMocks();
   });
@@ -250,9 +246,8 @@ describe('buildExecutableModule()', () => {
       './hello.js': `console.info('hello from hackbox');`
     };
     const fs = new FS(files);
-    const module = (
-      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
-    ).module;
+    const module = (await buildModules(getModuleMetaData('./hello.js'), fs))
+      .module;
 
     console.info = jest.fn();
     module();
@@ -266,9 +261,8 @@ describe('buildExecutableModule()', () => {
       export default hello;`
     };
     const fs = new FS(files);
-    const module = (
-      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
-    ).module;
+    const module = (await buildModules(getModuleMetaData('./hello.js'), fs))
+      .module;
 
     console.info = jest.fn();
     const exports = module();
@@ -288,14 +282,14 @@ describe('buildExecutableModule()', () => {
     const cache = ModuleCache.getInstance();
     const fs = new FS(files);
     const entryModule = (
-      await buildExecutableModules(getModuleMetaData('./hello.js'), fs)
+      await buildModules(getModuleMetaData('./hello.js'), fs)
     ).module;
 
     console.info = jest.fn();
     // try running the module with the _WELCOME dependency
     const entryFunc = new Function(
       'entryModule',
-      `entryModule(${cache.get('WELCOME')?.module}())`
+      `entryModule(${cache.get('WELCOME_DOT_JS')?.module}())`
     );
 
     entryFunc(entryModule);
@@ -326,6 +320,23 @@ describe('run()', () => {
     expect(console.info).toHaveBeenCalledWith(
       'hello from default import/export modules'
     );
+  });
+
+  it('should create the required stylesheets', async () => {
+    const files = {
+      './index.css': `body {
+        background: green;
+      }`,
+      './index.js': `import './index.css';`
+    };
+    const fs = new FS(files);
+
+    console.info = jest.fn();
+    await run(fs, './index.js');
+
+    const stylesheet = document.getElementById('INDEX_DOT_CSS');
+
+    expect(stylesheet?.innerText).toBe(files['./index.css']);
   });
 
   it('should evaluate the module only once', async () => {
@@ -397,6 +408,30 @@ describe('run()', () => {
 });
 
 describe('update()', () => {
+  it('should update the stylesheets', async () => {
+    const files = {
+      './index.css': `body {
+        background: green;
+      }`,
+      './index.js': `import './index.css';`
+    };
+    const fs = new FS(files);
+    const updatedCSS = `
+    body {
+      background: red;
+    }
+    `;
+
+    await run(fs, './index.js');
+
+    // update the css
+    await fs.writeFile('./index.css', updatedCSS);
+    await update(fs, './index.js', './index.css');
+    const stylesheet = document.getElementById('INDEX_DOT_CSS');
+
+    expect(stylesheet?.innerText).toBe(updatedCSS);
+  });
+
   it('should run the modules with renamed exports', async () => {
     const files = {
       './welcome.js': `function welcome() { console.info('hello from renamed exports modules') }
