@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "@hackbox/client/*": ["./packages/client/src/*"]
+    },
+    "jsx": "react"
+  },
+  "include": ["src", "webpack.config.js"],
+  "extends": "../../tsconfig.base.json"
+}
