@@ -72,7 +72,7 @@ module.exports = {
   appBuild: resolveApp('build'),
   appPublic: resolveApp('public'),
   appHtml: resolveApp('public/index.html'),
-  previewHtml: resolveApp('src/preview/index.html'),
+  previewHtml: resolveApp('src/modules/preview/index.html'),
   appIndexJs: resolveModule(resolveApp, 'src/index'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
@@ -84,7 +84,7 @@ module.exports = {
   appNodeModules: resolveApp('node_modules'),
   publicUrl: getPublicUrl(resolveApp('package.json')),
   servedPath: getServedPath(resolveApp('package.json')),
-  previewIndexJs: resolveModule(resolveApp, 'src/preview/index')
+  previewIndexJs: resolveModule(resolveApp, 'src/modules/preview/index')
 };
 
 module.exports.moduleFileExtensions = moduleFileExtensions;

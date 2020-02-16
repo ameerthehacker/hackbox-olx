@@ -7,8 +7,7 @@
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
     "test": "node scripts/test.js",
-    "lint": "eslint . --ext .tsx,.ts",
-    "lint:staged": "eslint --fix"
+    "lint": "eslint . --ext .tsx,.ts"
   },
   "dependencies": {
     "@babel/standalone": "^7.8.3",
@@ -58,7 +57,6 @@
     "eslint-plugin-flowtype": "3.13.0",
     "eslint-plugin-import": "2.18.2",
     "eslint-plugin-jsx-a11y": "6.2.3",
-    "eslint-plugin-react": "^7.17.0",
     "eslint-plugin-react-hooks": "^1.6.1",
     "file-loader": "4.3.0",
     "fs-extra": "^8.1.0",
@@ -91,7 +89,8 @@
     "webpack-dev-server": "3.9.0",
     "webpack-manifest-plugin": "2.2.0",
     "workbox-webpack-plugin": "4.3.1",
-    "worker-loader": "^2.0.0"
+    "worker-loader": "^2.0.0",
+    "eslint-plugin-react": "^7.17.0"
   },
   "browserslist": {
     "production": [

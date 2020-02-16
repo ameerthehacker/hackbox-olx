@@ -8,7 +8,7 @@ import {
   getAbsolutePath,
   getDirectoryName
 } from './utils';
-import { ModuleMetaData } from '../bundler';
+import { ModuleMetaData } from '../modules/bundler';
 
 describe('utils', () => {
   describe('getCanocialName()', () => {

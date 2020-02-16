@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { run, update } from '@hackbox/client/bundler';
+import { run, update } from '@hackbox/client/modules/bundler';
 import { FS } from '@hackbox/client/services/fs/fs';
 import {
   Broadcaster,
@@ -7,7 +7,7 @@ import {
   FileUpdate
 } from '@hackbox/client/services/broadcaster/broadcaster';
 import Loader from '@hackbox/client/components/loader/loader';
-import ErrorOverlay from '../../components/error-overlay/error-overlay';
+import ErrorOverlay from './components/error-overlay/error-overlay';
 import { ThemeProvider, Box } from '@chakra-ui/core';
 
 const broadcaster = Broadcaster.getInstance();

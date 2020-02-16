@@ -1,7 +1,11 @@
 import { transform } from '@babel/standalone';
-import { buildExecutableModules, run, update } from '@hackbox/client/bundler';
+import {
+  buildExecutableModules,
+  run,
+  update
+} from '@hackbox/client/modules/bundler';
 import { babelPlugin } from './workers/babel/babel';
-import { ModuleMetaData } from '@hackbox/client/bundler';
+import { ModuleMetaData } from '@hackbox/client/modules/bundler';
 import { getModuleMetaData } from '@hackbox/client/utils/utils';
 import { FS } from '@hackbox/client/services/fs/fs';
 import { ModuleCache } from './services/module-cache/module-cache';

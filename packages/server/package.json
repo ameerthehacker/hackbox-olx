@@ -4,8 +4,7 @@
   "description": "Express based node API server for hackbox",
   "scripts": {
     "start": "nodemon --exec ts-node src/app.ts",
-    "lint": "eslint . --ext .ts",
-    "lint:staged": "eslint --fix"
+    "lint": "eslint . --ext .ts"
   },
   "repository": "https://github.com/ameerthehacker/hackbox",
   "author": "ameerthehacker",

@@ -1,4 +1,4 @@
-import { ModuleDef } from '@hackbox/client/bundler';
+import { ModuleDef } from '@hackbox/client/modules/bundler';
 
 export class ModuleCache {
   private static instance: ModuleCache;

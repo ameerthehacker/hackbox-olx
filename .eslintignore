@@ -1,0 +1,4 @@
+packages/client/build/
+packages/client/config/
+packages/client/scripts/
+packages/client/src/react-app-env.d.ts
