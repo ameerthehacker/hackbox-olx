@@ -1,0 +1,9 @@
+{
+  "extends": ["../../.eslintrc.base.json"],
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {}
+}
