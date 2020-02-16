@@ -43,14 +43,20 @@ export async function buildCSSModule(
 ): Promise<ModuleDef> {
   let fileContent = '';
 
-  try {
-    fileContent = await fs.readFile(moduleMetaData.path);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      throw new Error(`module ${moduleMetaData.path} does not exists`);
-    } else {
-      throw err;
+  if (moduleMetaData.isLocalModule) {
+    try {
+      fileContent = await fs.readFile(moduleMetaData.path);
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        throw new Error(`module ${moduleMetaData.path} does not exists`);
+      } else {
+        throw err;
+      }
     }
+  } else {
+    fileContent = await (
+      await fetch(`https://dev.jspm.io/${moduleMetaData.path}`)
+    ).text();
   }
 
   const module = (): HTMLElement => {
@@ -209,6 +215,7 @@ export async function buildModules(
       moduleMetaData,
       fs
     );
+
     // build the executable modules of all the dependencies first
     for (const dep of hydratedModuleMetaData.deps) {
       // check if the module is already built or not
@@ -228,9 +235,7 @@ export async function buildModules(
               break;
             }
             default: {
-              throw new Error(
-                `no loader found for file ${moduleMetaData.fileName}`
-              );
+              throw new Error(`no loader found for file ${dep.fileName}`);
             }
           }
         }
@@ -336,10 +341,18 @@ export async function update(
       }
 
       const usedByModules = oldModuleDef.metaData.usedBy;
-      const { moduleDef: updatedModuleDef } = await buildExecutableModule(
-        oldModuleDef.metaData,
-        fs
-      );
+      const {
+        moduleDef: updatedModuleDef,
+        hydratedModuleMetaData
+      } = await buildExecutableModule(oldModuleDef.metaData, fs);
+      // update the module meta data
+      updatedModuleDef.metaData = hydratedModuleMetaData;
+      // check if there are any new dependencies that need to be built
+      hydratedModuleMetaData.deps.forEach(async (dep) => {
+        if (!moduleCache.get(dep.canocialName)) {
+          await buildModules(dep, fs);
+        }
+      });
 
       // update the cache with new module metadata
       moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
@@ -366,6 +379,7 @@ export async function update(
   }
 
   const entryModuleDef = moduleCache.get(entryModuleMetaData.canocialName);
+
   // run the entry module
   if (entryModuleDef) {
     runModule(entryModuleDef);

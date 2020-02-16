@@ -33,6 +33,7 @@ export function babelPlugin(
             path.node.source.value,
             containingDirectoryName
           );
+
           // update the dep's usedBy metadata
           if (
             !fileMetaData.deps.find(

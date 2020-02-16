@@ -1,10 +1,14 @@
 import { ModuleMetaData } from '../modules/bundler';
 
-export function getFileExt(fileName: string): string {
-  const fileNameArr = fileName.split('.');
-  const fileExt = fileNameArr[fileNameArr.length - 1];
+export function getFileExt(fileName: string): string | undefined {
+  if (fileName.includes('.')) {
+    const fileNameArr = fileName.split('.');
+    const fileExt = fileNameArr[fileNameArr.length - 1];
 
-  return fileExt;
+    return fileExt;
+  } else {
+    return undefined;
+  }
 }
 
 export function getFileName(filePath: string): string {
@@ -56,8 +60,8 @@ export function getCanocialName(filePath: string, cwd = '.'): string {
   // nav-bar -> NAV__BAR
   absoluteFilePathArr = absoluteFilePathArr.map((filePath) =>
     filePath
-      .replace('-', '_HIPEN_')
-      .replace('.', '_DOT_')
+      .replace(/-/gi, '_HIPEN_')
+      .replace(/\./gi, '_DOT_')
       .toUpperCase()
   );
 
@@ -79,30 +83,18 @@ export function isLocalModule(filePath: string): boolean {
 }
 
 export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
-  if (isLocalModule(filePath)) {
-    const fileName = getFileName(filePath);
-    const ext = getFileExt(fileName);
-    const canocialName = getCanocialName(filePath, cwd);
+  const fileName = getFileName(filePath);
+  const ext = getFileExt(fileName);
+  const isLocalMod = isLocalModule(filePath);
+  const canocialName = getCanocialName(filePath, isLocalMod ? cwd : '.');
 
-    return {
-      canocialName,
-      fileName,
-      ext,
-      isLocalModule: true,
-      path: filePath,
-      deps: [],
-      usedBy: []
-    };
-  } else {
-    // external modules are always refered from root
-    const canocialName = getCanocialName(filePath, '.');
-
-    return {
-      canocialName,
-      isLocalModule: false,
-      path: filePath,
-      deps: [],
-      usedBy: []
-    };
-  }
+  return {
+    canocialName,
+    fileName,
+    ext,
+    isLocalModule: isLocalMod,
+    path: filePath,
+    deps: [],
+    usedBy: []
+  };
 }

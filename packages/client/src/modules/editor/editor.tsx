@@ -59,7 +59,7 @@ export default function Editor({
           // reset the scrolling from other files
           editor.setScrollTop(0);
 
-          setEditorLanguage(editor, fileExt);
+          setEditorLanguage(editor, fileExt || '');
         });
       }
     }

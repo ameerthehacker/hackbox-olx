@@ -144,7 +144,9 @@ describe('utils', () => {
         path: filePath,
         deps: [],
         isLocalModule: false,
-        usedBy: []
+        usedBy: [],
+        ext: undefined,
+        fileName: 'lodash'
       });
     });
   });
