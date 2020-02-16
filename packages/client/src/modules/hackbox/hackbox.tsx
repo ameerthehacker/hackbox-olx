@@ -5,7 +5,6 @@ import React, {
   lazy,
   Suspense
 } from 'react';
-import NavBar from '@hackbox/client/components/navbar/navbar';
 import SideBar from '../side-bar/side-bar';
 import { useSelectedFile } from '@hackbox/client/contexts/selected-file';
 import { FSContext } from '@hackbox/client/contexts/fs';
@@ -14,6 +13,7 @@ import { Broadcaster } from '@hackbox/client/services/broadcaster/broadcaster';
 import SplitPane from 'react-split-pane';
 import { Box } from '@chakra-ui/core';
 import Loader from '@hackbox/client/components/loader/loader';
+import NavBar from '@hackbox/client/components/navbar/navbar';
 
 const Editor = lazy(() =>
   import(/* webpackPrefetch: true */ '../editor/editor')
