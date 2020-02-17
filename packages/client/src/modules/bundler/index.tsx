@@ -227,11 +227,16 @@ export async function buildModules(
         } else {
           switch (dep.ext) {
             case 'css': {
+              // push the usedBy for the CSS module
+              dep.usedBy.push(hydratedModuleMetaData);
+              // build the module
               await buildCSSModule(dep, fs);
+
               break;
             }
             case 'js': {
               await buildModules(dep, fs);
+
               break;
             }
             default: {
@@ -317,57 +322,88 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
   runModule(entryModuleDef);
 }
 
+export function invalidateTree(moduleMetaData: ModuleMetaData) {
+  moduleMetaData.usedBy.forEach((usedByModule: ModuleMetaData) => {
+    const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
+
+    if (usedByModuleDef) {
+      // burst the exportRef cache
+      usedByModuleDef.exportedRef = undefined;
+
+      // burst the cache of it's parent
+      invalidateTree(usedByModule);
+    } else {
+      throw new Error(`${usedByModule.fileName} could not be found`);
+    }
+  });
+}
+
 export async function update(
   fs: FS,
   entryFileName: string,
-  fileName: string
+  filePath: string
 ): Promise<void> {
-  const updatedModuleMetaData = getModuleMetaData(fileName);
+  const updatedModuleMetaData = getModuleMetaData(filePath);
   const updatedModuleCanocialName = updatedModuleMetaData.canocialName;
+  const oldModuleDef = moduleCache.get(updatedModuleCanocialName);
+
+  // can be altogether a new file so chill and exit
+  if (oldModuleDef === null || oldModuleDef === undefined) {
+    return;
+  }
+
   const entryModuleMetaData = getModuleMetaData(entryFileName);
 
   switch (updatedModuleMetaData.ext) {
     case 'css': {
-      await buildCSSModule(updatedModuleMetaData, fs);
+      // burst the cache of the module
+      const updatedModuleDef = await buildCSSModule(oldModuleDef.metaData, fs);
+
+      // execute the updated CSS module
+      updatedModuleDef.module();
 
       break;
     }
     case 'js': {
       // build the affected module
-      const oldModuleDef = moduleCache.get(updatedModuleCanocialName);
-
-      if (oldModuleDef === null || oldModuleDef === undefined) {
-        throw new Error(`${updatedModuleMetaData.fileName} could not be found`);
-      }
-
-      const usedByModules = oldModuleDef.metaData.usedBy;
       const {
         moduleDef: updatedModuleDef,
         hydratedModuleMetaData
       } = await buildExecutableModule(oldModuleDef.metaData, fs);
       // update the module meta data
       updatedModuleDef.metaData = hydratedModuleMetaData;
+
       // check if there are any new dependencies that need to be built
-      hydratedModuleMetaData.deps.forEach(async (dep) => {
+      for (let dep of hydratedModuleMetaData.deps) {
         if (!moduleCache.get(dep.canocialName)) {
-          await buildModules(dep, fs);
+          if (!dep.isLocalModule && !dep.ext) {
+            // to handle external dependencies like react, vue
+            await buildModules(dep, fs);
+          } else {
+            switch (dep.ext) {
+              case 'js': {
+                await buildModules(dep, fs);
+
+                break;
+              }
+              case 'css': {
+                await buildCSSModule(dep, fs);
+
+                break;
+              }
+              default: {
+                throw new Error(`no loader found for file ${dep.fileName}`);
+              }
+            }
+          }
         }
-      });
+      }
 
       // update the cache with new module metadata
       moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
 
       // this will force re-evaluation of all used by module
-      usedByModules.forEach(async (usedByModule: ModuleMetaData) => {
-        const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
-
-        if (usedByModuleDef) {
-          // burst the exportRef cache
-          usedByModuleDef.exportedRef = undefined;
-        } else {
-          throw new Error(`${usedByModule.fileName} could not be found`);
-        }
-      });
+      invalidateTree(oldModuleDef.metaData);
 
       break;
     }

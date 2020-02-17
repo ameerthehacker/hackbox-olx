@@ -5,6 +5,7 @@ import { Box, Flex, Stack, useToast } from '@chakra-ui/core';
 import { FaFolderPlus, FaFile } from 'react-icons/fa';
 import AddFileOrFolder from './components/add-modal/add-modal';
 import { FileTree } from './components/file-tree/file-tree';
+import { Broadcaster } from '@hackbox/client/services/broadcaster/broadcaster';
 
 export interface FileExplorerProps {
   rootPath: string;
@@ -21,6 +22,7 @@ export default function FileExplorer({
   const [isNewFolder, setIsNewFolder] = useState(false);
   const [selectedFile, setSelectedFile] = useSelectedFile();
   const toast = useToast();
+  const broadcaster = Broadcaster.getInstance();
 
   function showNewFolderModal(): void {
     setIsNewFolder(true);
@@ -68,7 +70,14 @@ export default function FileExplorer({
 
             if (isNewFolder) {
               fs?.mkdir(fileOrFolderNameWithPath)
-                .then(() => setIsNewFolderOrFileModalOpen(false))
+                .then(() => {
+                  broadcaster.broadcast('FS_SYNC', {
+                    name: fileOrFolderNameWithPath,
+                    isFile: false
+                  });
+
+                  setIsNewFolderOrFileModalOpen(false);
+                })
                 .catch((err) => {
                   setIsNewFolderOrFileModalOpen(false);
 
@@ -80,7 +89,14 @@ export default function FileExplorer({
                 });
             } else {
               fs?.createFile(fileOrFolderNameWithPath)
-                .then(() => setIsNewFolderOrFileModalOpen(false))
+                .then(() => {
+                  broadcaster.broadcast('FS_SYNC', {
+                    name: fileOrFolderNameWithPath,
+                    isFile: true
+                  });
+
+                  setIsNewFolderOrFileModalOpen(false);
+                })
                 .catch((err) => {
                   setIsNewFolderOrFileModalOpen(false);
 

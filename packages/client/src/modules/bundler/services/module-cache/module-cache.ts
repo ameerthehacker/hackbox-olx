@@ -4,7 +4,7 @@ export class ModuleCache {
   private static instance: ModuleCache;
 
   private constructor(
-    private cache: { [key: string]: null | ModuleDef } = {}
+    private cache: { [key: string]: undefined | ModuleDef } = {}
   ) {}
 
   public static getInstance(): ModuleCache {
@@ -20,16 +20,16 @@ export class ModuleCache {
   }
 
   public unset(key: string): void {
-    this.cache[key] = null;
+    this.cache[key] = undefined;
   }
 
-  public get(key: string): ModuleDef | null {
+  public get(key: string): ModuleDef | undefined {
     return this.cache[key];
   }
 
   public reset(): void {
     for (const key in this.cache) {
-      this.cache[key] = null;
+      this.cache[key] = undefined;
     }
   }
 }

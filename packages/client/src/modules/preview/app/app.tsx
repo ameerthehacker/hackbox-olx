@@ -4,7 +4,8 @@ import { FS } from '@hackbox/client/services/fs/fs';
 import {
   Broadcaster,
   FileInit,
-  FileUpdate
+  FileUpdate,
+  Sync
 } from '@hackbox/client/services/broadcaster/broadcaster';
 import Loader from '@hackbox/client/components/loader/loader';
 import ErrorOverlay from './components/error-overlay/error-overlay';
@@ -21,7 +22,9 @@ export default function App(): ReactElement | null {
     // tell UI that you are ready
     broadcaster.broadcast('PREVIEW_READY', null);
     broadcaster.listen('FS_INIT', (evt) => {
-      fs.importFromJSON((evt as FileInit).fsJSON);
+      evt = evt as FileInit;
+
+      fs.importFromJSON(evt.fsJSON);
 
       run(fs, evt.entry)
         .then(() => {
@@ -46,6 +49,16 @@ export default function App(): ReactElement | null {
         .catch((err) => {
           setError(`${err}`);
         });
+    });
+
+    broadcaster.listen('FS_SYNC', async (evt) => {
+      const { name, isFile } = evt as Sync;
+
+      if (isFile) {
+        await fs.createFile(name);
+      } else {
+        await fs.mkdir(name);
+      }
     });
   }, []);
 

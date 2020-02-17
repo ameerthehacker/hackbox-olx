@@ -87,13 +87,14 @@ export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
   const ext = getFileExt(fileName);
   const isLocalMod = isLocalModule(filePath);
   const canocialName = getCanocialName(filePath, isLocalMod ? cwd : '.');
+  const path = isLocalMod ? getAbsolutePath(filePath, cwd) : filePath;
 
   return {
     canocialName,
     fileName,
     ext,
     isLocalModule: isLocalMod,
-    path: filePath,
+    path,
     deps: [],
     usedBy: []
   };

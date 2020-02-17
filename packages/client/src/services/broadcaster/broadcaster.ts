@@ -1,9 +1,14 @@
-type EVENTS = 'FS_UPDATE' | 'PREVIEW_READY' | 'FS_INIT';
+type EVENTS = 'FS_UPDATE' | 'PREVIEW_READY' | 'FS_INIT' | 'FS_SYNC';
 
 export interface FileUpdate {
   entry: string;
   updatedFile: string;
   updatedFileContent: string;
+}
+
+export interface Sync {
+  name: string;
+  isFile: boolean;
 }
 
 export interface FileInit {
@@ -26,7 +31,7 @@ export class Broadcaster {
 
   public broadcast(
     event: EVENTS,
-    message: string | FileUpdate | FileInit | null
+    message: string | FileUpdate | FileInit | Sync | null
   ): void {
     this.bc.postMessage({
       type: event,
@@ -34,7 +39,10 @@ export class Broadcaster {
     });
   }
 
-  public listen(event: EVENTS, cb: (evt: FileUpdate | FileInit) => void): void {
+  public listen(
+    event: EVENTS,
+    cb: (evt: FileUpdate | FileInit | Sync) => void
+  ): void {
     this.bc.addEventListener('message', (evt) => {
       if (evt.data.type === event) {
         cb(evt.data.message);
