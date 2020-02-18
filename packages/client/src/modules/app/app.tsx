@@ -9,6 +9,10 @@ import { Broadcaster } from '@hackbox/client/services/broadcaster/broadcaster';
 export default function App(): ReactElement {
   // TODO: replace with template files
   const DEV_FILES = {
+    './data/person.json': `{
+  "name": "Ameer",
+  "city": "Hyderabad"
+}`,
     './components/counter.js': `import React, { useState } from 'react';
 import styled from 'styled-components';
 import hello from '../hello.js';
@@ -53,12 +57,18 @@ import ReactDOM from 'react-dom';
 import Counter from './components/counter.js';
 import hello from './hello.js';
 import './index.css';
+import { name, city } from './data/person.json';
 
 const App = (
   <>
     <Counter />
     <div>
       <button onClick={hello}>Say hello From App</button>
+    </div>
+    <div>
+      <hr/>
+      The below data is from JSON <br/>
+      {name} lives at {city}
     </div>    
   </>
 );

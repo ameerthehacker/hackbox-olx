@@ -28,7 +28,8 @@ export default function Editor({
   ): void {
     const extLanguageMap: { [ext: string]: string } = {
       js: 'javascript',
-      css: 'css'
+      css: 'css',
+      json: 'json'
     };
     const language = extLanguageMap[fileExt];
 

@@ -7,6 +7,7 @@ import { FS } from '@hackbox/client/services/fs/fs';
 import { Cache } from './services/cache/cache';
 import { ModuleDef, ModuleMetaData, ExportsMetaData } from './contracts';
 import { babelLoader } from './loaders/babel/babel-loader';
+import { jsonLoader } from './loaders/json/json-loader';
 
 export class Bundler {
   private moduleDefCache: Cache<ModuleDef>;
@@ -32,6 +33,9 @@ export class Bundler {
     switch (moduleMetaData.ext) {
       case 'js': {
         return await babelLoader(moduleMetaData, fs, eventCb);
+      }
+      case 'json': {
+        return await jsonLoader(moduleMetaData, fs, eventCb);
       }
       case 'css': {
         // dynamically load cssLoader as we may not always need it
