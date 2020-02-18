@@ -5,9 +5,8 @@ import {
 } from '@hackbox/client/utils/utils';
 import { FS } from '@hackbox/client/services/fs/fs';
 import { Cache } from './services/cache/cache';
-import { babelLoader } from './loaders/babel/babel-loader';
-import { cssLoader } from './loaders/css/css-loader';
 import { ModuleDef, ModuleMetaData, ExportsMetaData } from './contracts';
+import { babelLoader } from './loaders/babel/babel-loader';
 
 export class Bundler {
   private moduleDefCache: Cache<ModuleDef>;
@@ -34,6 +33,9 @@ export class Bundler {
         return await babelLoader(moduleMetaData, fs);
       }
       case 'css': {
+        // dynamically load cssLoader as we may not always need it
+        const { cssLoader } = await import('./loaders/css/css-loader');
+
         return await cssLoader(moduleMetaData, fs);
       }
       default: {
