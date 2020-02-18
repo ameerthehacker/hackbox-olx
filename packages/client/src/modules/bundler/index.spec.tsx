@@ -271,38 +271,11 @@ describe('buildExecutableModules()', () => {
 
     expect(console.info).toHaveBeenCalledWith('hello from export');
   });
-
-  it('should run with a dependency injected', async () => {
-    const files = {
-      './welcome.js': `function welcome() { console.info('hello from dep injection') }
-      export default welcome;`,
-      './hello.js': `import welcome from './welcome.js';
-      welcome();`
-    };
-    const cache = ModuleCache.getInstance();
-    const fs = new FS(files);
-    const entryModule = (
-      await buildModules(getModuleMetaData('./hello.js'), fs)
-    ).module;
-
-    console.info = jest.fn();
-    // try running the module with the _WELCOME dependency
-    const entryFunc = new Function(
-      'entryModule',
-      `entryModule(${cache.get('WELCOME_DOT_JS')?.module}())`
-    );
-
-    entryFunc(entryModule);
-
-    expect(console.info).toHaveBeenCalledWith('hello from dep injection');
-  });
 });
 
 describe('run()', () => {
   beforeEach(() => {
     jest.resetAllMocks();
-    // reset the cache
-    ModuleCache.getInstance().reset();
   });
 
   it('should run the modules with default imports, exports', async () => {
@@ -432,7 +405,7 @@ describe('update()', () => {
     expect(stylesheet?.innerText).toBe(updatedCSS);
   });
 
-  it('should run the modules with renamed exports', async () => {
+  it('should run the modules with renamed export values', async () => {
     const files = {
       './welcome.js': `function welcome() { console.info('hello from renamed exports modules') }
       export { welcome as something };`,

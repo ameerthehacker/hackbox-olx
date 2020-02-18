@@ -1,14 +1,16 @@
 import {
   getModuleMetaData,
-  getCanocialName,
-  isLocalModule
+  isLocalModule,
+  getCanocialName
 } from '@hackbox/client/utils/utils';
 import { FS } from '@hackbox/client/services/fs/fs';
 import { ModuleCache } from './services/module-cache/module-cache';
 import * as comlink from 'comlink';
 import BabelWorker from 'worker-loader!./workers/babel/babel.worker.ts';
 
-const moduleCache = ModuleCache.getInstance();
+const moduleCache = new ModuleCache<ModuleDef>();
+const moduleMetaDataCache = new ModuleCache<ModuleMetaData>();
+const exportRefCache = new ModuleCache<ExportsMetaData>();
 
 // we should not add this to the render function as it will be downloaded during every render
 const babelWorker = comlink.wrap<{
@@ -19,10 +21,9 @@ const babelWorker = comlink.wrap<{
 }>(new BabelWorker());
 
 export interface ModuleDef {
+  canocialName: string;
   module: Function;
-  exportedRef?: ExportsMetaData;
   deps: string[];
-  metaData: ModuleMetaData;
 }
 
 export interface ModuleMetaData {
@@ -48,15 +49,7 @@ export async function cssLoader(
   let fileContent = '';
 
   if (moduleMetaData.isLocalModule) {
-    try {
-      fileContent = await fs.readFile(moduleMetaData.path);
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        throw new Error(`module ${moduleMetaData.path} does not exists`);
-      } else {
-        throw err;
-      }
-    }
+    fileContent = await fs.readFile(moduleMetaData.path);
   } else {
     fileContent = await (
       await fetch(`https://dev.jspm.io/${moduleMetaData.path}`)
@@ -80,8 +73,8 @@ export async function cssLoader(
   };
 
   const moduleDef: ModuleDef = {
+    canocialName: moduleMetaData.canocialName,
     deps: [],
-    metaData: moduleMetaData,
     module
   };
 
@@ -194,7 +187,7 @@ export async function babelLoader(
     const moduleDef: ModuleDef = {
       module: new Function(...depArgs, transformedCode),
       deps: depArgs,
-      metaData: hydratedModuleMetaData
+      canocialName: hydratedModuleMetaData.canocialName
     };
 
     return {
@@ -221,10 +214,8 @@ export async function babelLoader(
     const moduleDef: ModuleDef = {
       module,
       deps: [],
-      metaData: moduleMetaData
+      canocialName: moduleMetaData.canocialName
     };
-
-    moduleCache.set(moduleMetaData.canocialName, moduleDef);
 
     return {
       moduleDef,
@@ -265,6 +256,7 @@ export async function buildModules(
     fs
   );
 
+  moduleMetaDataCache.set(hydratedModuleMetaData.path, hydratedModuleMetaData);
   moduleCache.set(hydratedModuleMetaData.canocialName, moduleDef);
 
   // build the executable modules of all the dependencies first
@@ -282,31 +274,34 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
   const depRefs: ExportsMetaData[] = [];
 
   for (const dep of moduleDef.deps) {
-    const depModuleDef = moduleCache.get(dep);
+    const exportedRef = exportRefCache.get(dep);
 
-    if (depModuleDef) {
-      if (depModuleDef.exportedRef === undefined) {
+    if (!exportedRef) {
+      const depModuleDef = moduleCache.get(dep);
+
+      if (depModuleDef !== undefined) {
         const depRef = runModule(depModuleDef);
 
         depRefs.push(depRef);
-      } else {
-        const depRef = depModuleDef.exportedRef;
-
-        depRefs.push(depRef);
       }
+    } else {
+      depRefs.push(exportedRef);
     }
   }
 
   const exportedRef = moduleDef.module(...depRefs);
-  // update the module definition with exported reference
-  moduleDef.exportedRef = exportedRef;
+  // update the exportedRef cache
+  exportRefCache.set(moduleDef.canocialName, exportedRef);
 
   return exportedRef;
 }
 
 export async function run(fs: FS, entryFile: string): Promise<void> {
   // clear the cache
-  ModuleCache.getInstance().reset();
+  moduleCache.reset();
+  moduleMetaDataCache.reset();
+  exportRefCache.reset();
+
   const entryFileMetaData = getModuleMetaData(entryFile);
   // build all the executable modules
   const entryModuleDef = await buildModules(entryFileMetaData, fs);
@@ -314,19 +309,11 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
   runModule(entryModuleDef);
 }
 
-export function invalidateTree(moduleMetaData: ModuleMetaData) {
+export function invalidateDependentModules(moduleMetaData: ModuleMetaData) {
   moduleMetaData.usedBy.forEach((usedByModule: ModuleMetaData) => {
-    const usedByModuleDef = moduleCache.get(usedByModule.canocialName);
+    exportRefCache.unset(moduleMetaData.canocialName);
 
-    if (usedByModuleDef) {
-      // burst the exportRef cache
-      usedByModuleDef.exportedRef = undefined;
-
-      // burst the cache of it's parent
-      invalidateTree(usedByModule);
-    } else {
-      throw new Error(`${usedByModule.fileName} could not be found`);
-    }
+    invalidateDependentModules(usedByModule);
   });
 }
 
@@ -335,17 +322,17 @@ export async function update(
   entryFileName: string,
   filePath: string
 ): Promise<void> {
-  const updatedModuleMetaData = getModuleMetaData(filePath);
-  const updatedModuleDef = moduleCache.get(updatedModuleMetaData.canocialName);
+  const updatedModuleMetaData = moduleMetaDataCache.get(filePath);
 
-  if (updatedModuleDef) {
-    await buildModules(updatedModuleDef.metaData, fs);
+  if (updatedModuleMetaData) {
+    await buildModules(updatedModuleMetaData, fs);
 
     // invalidate the cache of all dependent
-    invalidateTree(updatedModuleDef.metaData);
+    invalidateDependentModules(updatedModuleMetaData);
 
-    const entryModuleMetaData = getModuleMetaData(entryFileName);
-    const entryModuleDef = moduleCache.get(entryModuleMetaData.canocialName);
+    const entryModuleCanocialName = getCanocialName(entryFileName);
+
+    const entryModuleDef = moduleCache.get(entryModuleCanocialName);
 
     // run the entry module
     if (entryModuleDef) {

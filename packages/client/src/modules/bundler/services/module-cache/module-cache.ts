@@ -1,21 +1,13 @@
-import { ModuleDef } from '@hackbox/client/modules/bundler';
+import {
+  ModuleDef,
+  ModuleMetaData,
+  ExportsMetaData
+} from '@hackbox/client/modules/bundler';
 
-export class ModuleCache {
-  private static instance: ModuleCache;
+export class ModuleCache<T> {
+  constructor(private cache: { [key: string]: undefined | T } = {}) {}
 
-  private constructor(
-    private cache: { [key: string]: undefined | ModuleDef } = {}
-  ) {}
-
-  public static getInstance(): ModuleCache {
-    if (this.instance == null) {
-      this.instance = new ModuleCache();
-    }
-
-    return this.instance;
-  }
-
-  public set(key: string, value: ModuleDef): void {
+  public set(key: string, value: T): void {
     this.cache[key] = value;
   }
 
@@ -23,7 +15,7 @@ export class ModuleCache {
     this.cache[key] = undefined;
   }
 
-  public get(key: string): ModuleDef | undefined {
+  public get(key: string): T | undefined {
     return this.cache[key];
   }
 
