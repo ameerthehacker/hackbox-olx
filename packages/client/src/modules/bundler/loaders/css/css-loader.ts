@@ -1,15 +1,21 @@
 import { ModuleMetaData, ModuleDef } from '../../contracts';
 import { FS } from '@hackbox/client/services/fs/fs';
+import { first } from '@hackbox/client/utils/utils';
 
 export async function cssLoader(
   moduleMetaData: ModuleMetaData,
-  fs: FS
+  fs: FS,
+  eventCb?: (event: string) => void
 ): Promise<{ hydratedModuleMetaData: ModuleMetaData; moduleDef: ModuleDef }> {
   let fileContent = '';
 
   if (moduleMetaData.isLocalModule) {
     fileContent = await fs.readFile(moduleMetaData.path);
   } else {
+    const packageName = first(moduleMetaData.path.split('/'));
+
+    if (eventCb) eventCb(`Downloading stylesheet from ${packageName}`);
+
     fileContent = await (
       await fetch(`https://dev.jspm.io/${moduleMetaData.path}`)
     ).text();

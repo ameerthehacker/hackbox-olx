@@ -99,3 +99,11 @@ export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
     usedBy: []
   };
 }
+
+export function first(array: Array<any>) {
+  return array[0];
+}
+
+export function last(array: Array<any>) {
+  return array[array.length - 1];
+}

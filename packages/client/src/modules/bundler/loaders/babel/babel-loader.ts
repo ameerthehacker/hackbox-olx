@@ -38,11 +38,13 @@ function module(HELLO) {
 */
 export async function babelLoader(
   moduleMetaData: ModuleMetaData,
-  fs: FS
+  fs: FS,
+  eventCb?: (event: string) => void
 ): Promise<{ moduleDef: ModuleDef; hydratedModuleMetaData: ModuleMetaData }> {
   if (moduleMetaData.isLocalModule) {
     const fileContent = await fs.readFile(moduleMetaData.path);
 
+    if (eventCb) eventCb(`Transpiling modules...`);
     /* eslint-disable prefer-const */
     let {
       transformedCode,
@@ -125,6 +127,7 @@ export async function babelLoader(
       hydratedModuleMetaData
     };
   } else {
+    if (eventCb) eventCb(`Downloading package ${moduleMetaData.path}...`);
     // it is an external module like lodash
     const externalModule = await import(
       /* webpackIgnore: true */ `https://dev.jspm.io/${moduleMetaData.path}`

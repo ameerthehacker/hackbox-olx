@@ -21,22 +21,23 @@ export class Bundler {
 
   async runLoaders(
     moduleMetaData: ModuleMetaData,
-    fs: FS
+    fs: FS,
+    eventCb?: (event: string) => void
   ): Promise<{ moduleDef: ModuleDef; hydratedModuleMetaData: ModuleMetaData }> {
     // TODO: fix this special case for react, lodash
     if (!isLocalModule(moduleMetaData.path) && !moduleMetaData.ext) {
-      return await babelLoader(moduleMetaData, fs);
+      return await babelLoader(moduleMetaData, fs, eventCb);
     }
 
     switch (moduleMetaData.ext) {
       case 'js': {
-        return await babelLoader(moduleMetaData, fs);
+        return await babelLoader(moduleMetaData, fs, eventCb);
       }
       case 'css': {
         // dynamically load cssLoader as we may not always need it
         const { cssLoader } = await import('./loaders/css/css-loader');
 
-        return await cssLoader(moduleMetaData, fs);
+        return await cssLoader(moduleMetaData, fs, eventCb);
       }
       default: {
         throw new Error(`no loader found for file ${moduleMetaData.fileName}`);
@@ -46,7 +47,8 @@ export class Bundler {
 
   private async buildModules(
     moduleMetaData: ModuleMetaData,
-    fs: FS
+    fs: FS,
+    eventCb?: (event: string) => void
   ): Promise<ModuleDef> {
     if (
       moduleMetaData.isLocalModule &&
@@ -58,7 +60,8 @@ export class Bundler {
     // transform that dependency and cache it
     const { hydratedModuleMetaData, moduleDef } = await this.runLoaders(
       moduleMetaData,
-      fs
+      fs,
+      eventCb
     );
 
     this.moduleMetaDataCache.set(
@@ -71,7 +74,7 @@ export class Bundler {
     for (const dep of hydratedModuleMetaData.deps) {
       // check if the module is already built or not
       if (!this.moduleDefCache.get(dep.canocialName)) {
-        await this.buildModules(dep, fs);
+        await this.buildModules(dep, fs, eventCb);
       }
     }
 
@@ -104,7 +107,7 @@ export class Bundler {
     return exportedRef;
   }
 
-  async run(): Promise<void> {
+  async run(eventCb?: (event: string) => void): Promise<void> {
     // clear the cache
     this.moduleDefCache.reset();
     this.moduleMetaDataCache.reset();
@@ -112,7 +115,11 @@ export class Bundler {
 
     const entryFileMetaData = getModuleMetaData(this.entry);
     // build all the executable modules
-    const entryModuleDef = await this.buildModules(entryFileMetaData, this.fs);
+    const entryModuleDef = await this.buildModules(
+      entryFileMetaData,
+      this.fs,
+      eventCb
+    );
     // now all the transformed files are in the cache and we can run the entry module
     this.runModule(entryModuleDef);
   }
@@ -125,11 +132,14 @@ export class Bundler {
     });
   }
 
-  async update(filePath: string): Promise<void> {
+  async update(
+    filePath: string,
+    eventCb?: (event: string) => void
+  ): Promise<void> {
     const updatedModuleMetaData = this.moduleMetaDataCache.get(filePath);
 
     if (updatedModuleMetaData) {
-      await this.buildModules(updatedModuleMetaData, this.fs);
+      await this.buildModules(updatedModuleMetaData, this.fs, eventCb);
 
       // invalidate the cache of all dependent
       this.invalidateDependentModules(updatedModuleMetaData);
