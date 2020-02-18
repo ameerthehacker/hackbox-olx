@@ -1,4 +1,8 @@
-import { getModuleMetaData } from '@hackbox/client/utils/utils';
+import {
+  getModuleMetaData,
+  getCanocialName,
+  isLocalModule
+} from '@hackbox/client/utils/utils';
 import { FS } from '@hackbox/client/services/fs/fs';
 import { ModuleCache } from './services/module-cache/module-cache';
 import * as comlink from 'comlink';
@@ -37,10 +41,10 @@ export interface ExportsMetaData {
   default: string;
 }
 
-export async function buildCSSModule(
+export async function cssLoader(
   moduleMetaData: ModuleMetaData,
   fs: FS
-): Promise<ModuleDef> {
+): Promise<{ hydratedModuleMetaData: ModuleMetaData; moduleDef: ModuleDef }> {
   let fileContent = '';
 
   if (moduleMetaData.isLocalModule) {
@@ -83,7 +87,7 @@ export async function buildCSSModule(
 
   moduleCache.set(moduleMetaData.canocialName, moduleDef);
 
-  return moduleDef;
+  return { hydratedModuleMetaData: moduleMetaData, moduleDef };
 }
 
 /*
@@ -109,29 +113,20 @@ function module(HELLO) {
   }
 }
 */
-export async function buildExecutableModule(
+export async function babelLoader(
   moduleMetaData: ModuleMetaData,
   fs: FS
 ): Promise<{ moduleDef: ModuleDef; hydratedModuleMetaData: ModuleMetaData }> {
-  let fileContent = '';
+  if (moduleMetaData.isLocalModule) {
+    const fileContent = await fs.readFile(moduleMetaData.path);
 
-  try {
-    fileContent = await fs.readFile(moduleMetaData.path);
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      throw new Error(`module ${moduleMetaData.path} does not exists`);
-    } else {
-      throw err;
-    }
-  }
+    /* eslint-disable prefer-const */
+    let {
+      transformedCode,
+      hydratedModuleMetaData
+    } = await babelWorker.babelTransform(fileContent, moduleMetaData);
 
-  /* eslint-disable prefer-const */
-  let {
-    transformedCode,
-    hydratedModuleMetaData
-  } = await babelWorker.babelTransform(fileContent, moduleMetaData);
-
-  /*
+    /*
     var hello$ = HELLO.default;
 
     hello$();
@@ -152,25 +147,25 @@ export async function buildExecutableModule(
       get default() { return myHello; }
     }
     */
-  const exports = [];
+    const exports = [];
 
-  for (const exportKey in hydratedModuleMetaData.exports) {
-    const exportedRef = hydratedModuleMetaData.exports[exportKey];
+    for (const exportKey in hydratedModuleMetaData.exports) {
+      const exportedRef = hydratedModuleMetaData.exports[exportKey];
 
-    if (exportedRef && exportedRef.trim().length > 0) {
-      exports.push(`get ${exportKey}() { return ${exportedRef}; }`);
+      if (exportedRef && exportedRef.trim().length > 0) {
+        exports.push(`get ${exportKey}() { return ${exportedRef}; }`);
+      }
     }
-  }
 
-  const returnValue = `{${exports.join(',')}}`;
-  /*
+    const returnValue = `{${exports.join(',')}}`;
+    /*
       return {
         get default() { return hello; }
       }
     */
-  transformedCode += `;return ${returnValue};`;
+    transformedCode += `;return ${returnValue};`;
 
-  /*
+    /*
     var hello$ = HELLO.default();
 
     hello$();
@@ -195,69 +190,18 @@ export async function buildExecutableModule(
       }
     }
     */
-  const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
-  const moduleDef: ModuleDef = {
-    module: new Function(...depArgs, transformedCode),
-    deps: depArgs,
-    metaData: hydratedModuleMetaData
-  };
+    const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
+    const moduleDef: ModuleDef = {
+      module: new Function(...depArgs, transformedCode),
+      deps: depArgs,
+      metaData: hydratedModuleMetaData
+    };
 
-  return { moduleDef, hydratedModuleMetaData };
-}
-
-export async function buildModules(
-  moduleMetaData: ModuleMetaData,
-  fs: FS
-): Promise<ModuleDef> {
-  // check if it is local module like ./module.js
-  if (moduleMetaData.isLocalModule) {
-    const { hydratedModuleMetaData, moduleDef } = await buildExecutableModule(
-      moduleMetaData,
-      fs
-    );
-
-    // build the executable modules of all the dependencies first
-    for (const dep of hydratedModuleMetaData.deps) {
-      // check if the module is already built or not
-      if (!moduleCache.get(dep.canocialName)) {
-        // transform that dependency and cache it
-        if (!dep.isLocalModule && !dep.ext) {
-          // to handle external dependencies like react, vue
-          await buildModules(dep, fs);
-        } else {
-          switch (dep.ext) {
-            case 'css': {
-              // push the usedBy for the CSS module
-              dep.usedBy.push(hydratedModuleMetaData);
-              // build the module
-              await buildCSSModule(dep, fs);
-
-              break;
-            }
-            case 'js': {
-              await buildModules(dep, fs);
-
-              break;
-            }
-            default: {
-              throw new Error(`no loader found for file ${dep.fileName}`);
-            }
-          }
-        }
-      }
-    }
-
-    // add module to the code cache
-    moduleCache.set(hydratedModuleMetaData.canocialName, moduleDef);
-
-    return moduleDef;
+    return {
+      moduleDef,
+      hydratedModuleMetaData
+    };
   } else {
-    const cachedModuleDef = moduleCache.get(moduleMetaData.canocialName);
-
-    if (cachedModuleDef !== null && cachedModuleDef !== undefined) {
-      return cachedModuleDef;
-    }
-
     // it is an external module like lodash
     const externalModule = await import(
       /* webpackIgnore: true */ `https://dev.jspm.io/${moduleMetaData.path}`
@@ -282,8 +226,56 @@ export async function buildModules(
 
     moduleCache.set(moduleMetaData.canocialName, moduleDef);
 
-    return moduleDef;
+    return {
+      moduleDef,
+      hydratedModuleMetaData: moduleMetaData
+    };
   }
+}
+
+export async function runLoaders(
+  moduleMetaData: ModuleMetaData,
+  fs: FS
+): Promise<{ moduleDef: ModuleDef; hydratedModuleMetaData: ModuleMetaData }> {
+  // TODO: fix this special case for react, lodash
+  if (!isLocalModule(moduleMetaData.path) && !moduleMetaData.ext) {
+    return await babelLoader(moduleMetaData, fs);
+  }
+
+  switch (moduleMetaData.ext) {
+    case 'js': {
+      return await babelLoader(moduleMetaData, fs);
+    }
+    case 'css': {
+      return await cssLoader(moduleMetaData, fs);
+    }
+    default: {
+      throw new Error(`no loader found for file ${moduleMetaData.fileName}`);
+    }
+  }
+}
+
+export async function buildModules(
+  moduleMetaData: ModuleMetaData,
+  fs: FS
+): Promise<ModuleDef> {
+  // transform that dependency and cache it
+  const { hydratedModuleMetaData, moduleDef } = await runLoaders(
+    moduleMetaData,
+    fs
+  );
+
+  moduleCache.set(hydratedModuleMetaData.canocialName, moduleDef);
+
+  // build the executable modules of all the dependencies first
+  for (const dep of hydratedModuleMetaData.deps) {
+    // check if the module is already built or not
+    if (!moduleCache.get(dep.canocialName)) {
+      await buildModules(dep, fs);
+    }
+  }
+
+  return moduleDef;
 }
 
 export function runModule(moduleDef: ModuleDef): ExportsMetaData {
@@ -344,82 +336,22 @@ export async function update(
   filePath: string
 ): Promise<void> {
   const updatedModuleMetaData = getModuleMetaData(filePath);
-  const updatedModuleCanocialName = updatedModuleMetaData.canocialName;
-  const oldModuleDef = moduleCache.get(updatedModuleCanocialName);
+  const updatedModuleDef = moduleCache.get(updatedModuleMetaData.canocialName);
 
-  // can be altogether a new file so chill and exit
-  if (oldModuleDef === null || oldModuleDef === undefined) {
-    return;
-  }
+  if (updatedModuleDef) {
+    await buildModules(updatedModuleDef.metaData, fs);
 
-  const entryModuleMetaData = getModuleMetaData(entryFileName);
+    // invalidate the cache of all dependent
+    invalidateTree(updatedModuleDef.metaData);
 
-  switch (updatedModuleMetaData.ext) {
-    case 'css': {
-      // burst the cache of the module
-      const updatedModuleDef = await buildCSSModule(oldModuleDef.metaData, fs);
+    const entryModuleMetaData = getModuleMetaData(entryFileName);
+    const entryModuleDef = moduleCache.get(entryModuleMetaData.canocialName);
 
-      // execute the updated CSS module
-      updatedModuleDef.module();
-
-      break;
+    // run the entry module
+    if (entryModuleDef) {
+      runModule(entryModuleDef);
+    } else {
+      throw new Error(`${entryFileName} could not be found`);
     }
-    case 'js': {
-      // build the affected module
-      const {
-        moduleDef: updatedModuleDef,
-        hydratedModuleMetaData
-      } = await buildExecutableModule(oldModuleDef.metaData, fs);
-      // update the module meta data
-      updatedModuleDef.metaData = hydratedModuleMetaData;
-
-      // check if there are any new dependencies that need to be built
-      for (let dep of hydratedModuleMetaData.deps) {
-        if (!moduleCache.get(dep.canocialName)) {
-          if (!dep.isLocalModule && !dep.ext) {
-            // to handle external dependencies like react, vue
-            await buildModules(dep, fs);
-          } else {
-            switch (dep.ext) {
-              case 'js': {
-                await buildModules(dep, fs);
-
-                break;
-              }
-              case 'css': {
-                await buildCSSModule(dep, fs);
-
-                break;
-              }
-              default: {
-                throw new Error(`no loader found for file ${dep.fileName}`);
-              }
-            }
-          }
-        }
-      }
-
-      // update the cache with new module metadata
-      moduleCache.set(oldModuleDef.metaData.canocialName, updatedModuleDef);
-
-      // this will force re-evaluation of all used by module
-      invalidateTree(oldModuleDef.metaData);
-
-      break;
-    }
-    default: {
-      throw new Error(
-        `no loader found for file ${updatedModuleMetaData.fileName}`
-      );
-    }
-  }
-
-  const entryModuleDef = moduleCache.get(entryModuleMetaData.canocialName);
-
-  // run the entry module
-  if (entryModuleDef) {
-    runModule(entryModuleDef);
-  } else {
-    throw new Error(`${entryFileName} could not be found`);
   }
 }
