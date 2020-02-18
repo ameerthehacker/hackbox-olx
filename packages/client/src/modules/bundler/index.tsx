@@ -124,7 +124,7 @@ export class Bundler {
     this.runModule(entryModuleDef);
   }
 
-  private invalidateDependentModules(moduleMetaData: ModuleMetaData) {
+  private invalidateDependentModules(moduleMetaData: ModuleMetaData): void {
     moduleMetaData.usedBy.forEach((usedByModule: ModuleMetaData) => {
       this.exportedRefCache.unset(moduleMetaData.canocialName);
 

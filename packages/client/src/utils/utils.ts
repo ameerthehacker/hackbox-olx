@@ -1,9 +1,19 @@
 import { ModuleMetaData } from '@hackbox/client/modules/bundler/contracts';
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export function first(array: Array<any>): any {
+  return array[0];
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export function last(array: Array<any>): any {
+  return array[array.length - 1];
+}
+
 export function getFileExt(fileName: string): string | undefined {
   if (fileName.includes('.')) {
-    const fileNameArr = fileName.split('.');
-    const fileExt = fileNameArr[fileNameArr.length - 1];
+    const fileNameParts = fileName.split('.');
+    const fileExt = last(fileNameParts);
 
     return fileExt;
   } else {
@@ -12,21 +22,20 @@ export function getFileExt(fileName: string): string | undefined {
 }
 
 export function getFileName(filePath: string): string {
-  const filePathArr = filePath.split('/');
+  const filePathParts = filePath.split('/');
 
-  return filePathArr[filePathArr.length - 1];
+  return last(filePathParts);
 }
 
 export function getFileNameWithoutExt(fileName: string): string {
-  const fileNameArr = fileName.split('.');
-  const fileExt = fileNameArr[fileNameArr.length - 1];
+  const fileExt = getFileExt(fileName);
   const fileNameWithoutExt = fileName.replace(`.${fileExt}`, '');
 
   return fileNameWithoutExt;
 }
 
 export function getAbsolutePath(relativePath: string, cwd: string): string {
-  const relativePathArr = relativePath.split('/');
+  const relativePathParts = relativePath.split('/');
   const cwdArr = cwd.split('/');
   const relativePathToCwdArr: string[] = [];
 
@@ -35,7 +44,7 @@ export function getAbsolutePath(relativePath: string, cwd: string): string {
     cwdArr.pop();
   }
 
-  for (const relativePathSeg of relativePathArr) {
+  for (const relativePathSeg of relativePathParts) {
     if (relativePathSeg === '..') {
       cwdArr.pop();
     } else if (relativePathSeg !== '.') {
@@ -50,32 +59,32 @@ export function getAbsolutePath(relativePath: string, cwd: string): string {
 
 export function getCanocialName(filePath: string, cwd = '.'): string {
   const absoluteFilePath = getAbsolutePath(filePath, cwd);
-  let absoluteFilePathArr = absoluteFilePath.split('/');
+  let absoluteFilePathParts = absoluteFilePath.split('/');
 
   // ./main.js => ['.', 'main.js'] => ['main.js']
-  if (absoluteFilePathArr[0] === '.') {
-    absoluteFilePathArr.splice(0, 1);
+  if (absoluteFilePathParts[0] === '.') {
+    absoluteFilePathParts.splice(0, 1);
   }
 
   // nav-bar -> NAV__BAR
-  absoluteFilePathArr = absoluteFilePathArr.map((filePath) =>
+  absoluteFilePathParts = absoluteFilePathParts.map((filePath) =>
     filePath
       .replace(/-/gi, '_HIPEN_')
       .replace(/\./gi, '_DOT_')
       .toUpperCase()
   );
 
-  const canocialName = absoluteFilePathArr.join('_');
+  const canocialName = absoluteFilePathParts.join('_');
 
   return canocialName;
 }
 
 export function getDirectoryName(filePath: string): string {
-  const filePathArr = filePath.split('/');
+  const filePathParts = filePath.split('/');
   // remove the fileName
-  filePathArr.pop();
+  filePathParts.pop();
 
-  return filePathArr.join('/');
+  return filePathParts.join('/');
 }
 
 export function isLocalModule(filePath: string): boolean {
@@ -98,12 +107,4 @@ export function getModuleMetaData(filePath: string, cwd = '.'): ModuleMetaData {
     deps: [],
     usedBy: []
   };
-}
-
-export function first(array: Array<any>) {
-  return array[0];
-}
-
-export function last(array: Array<any>) {
-  return array[array.length - 1];
 }

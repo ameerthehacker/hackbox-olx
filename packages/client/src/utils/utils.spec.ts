@@ -6,9 +6,11 @@ import {
   getModuleMetaData,
   isLocalModule,
   getAbsolutePath,
-  getDirectoryName
+  getDirectoryName,
+  first,
+  last
 } from './utils';
-import { ModuleMetaData } from '../modules/bundler';
+import { ModuleMetaData } from '../modules/bundler/contracts';
 
 describe('utils', () => {
   describe('getCanocialName()', () => {
@@ -165,5 +167,13 @@ describe('utils', () => {
       expect(isLocalModule(module)).toBeTruthy();
       expect(isLocalModule(deepModule)).toBeTruthy();
     });
+  });
+
+  it('first() should return first element of array', () => {
+    expect(first([10, 20, 30])).toBe(10);
+  });
+
+  it('last() should return last element of array', () => {
+    expect(last([10, 20, 30])).toBe(30);
   });
 });

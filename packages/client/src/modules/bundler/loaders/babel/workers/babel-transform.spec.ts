@@ -27,7 +27,7 @@ welcome$();`;
     expect(transformedCode).toBe(expectedTransformedCode);
   });
 
-  it('it should replace the import by variable declaration', () => {
+  it('should replace the import by variable declaration', () => {
     const someFileMetaData = getModuleMetaData('./hello.js');
     const code = `import counter from './counter.js'`;
     const expectedTransformedCode = `var counter$ = COUNTER_DOT_JS.default;`;

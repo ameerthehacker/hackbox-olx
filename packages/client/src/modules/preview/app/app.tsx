@@ -9,14 +9,7 @@ import {
 } from '@hackbox/client/services/broadcaster/broadcaster';
 import Loader from '@hackbox/client/components/loader/loader';
 import ErrorOverlay from './components/error-overlay/error-overlay';
-import {
-  ThemeProvider,
-  Box,
-  Spinner,
-  CSSReset,
-  Text,
-  Stack
-} from '@chakra-ui/core';
+import { ThemeProvider, Box, Spinner, Text, Stack } from '@chakra-ui/core';
 
 const broadcaster = Broadcaster.getInstance();
 const fs = new FS();
