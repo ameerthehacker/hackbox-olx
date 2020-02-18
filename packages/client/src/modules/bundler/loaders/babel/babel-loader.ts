@@ -1,5 +1,8 @@
 import * as comlink from 'comlink';
-import { ModuleMetaData, ModuleDef } from '../..';
+import {
+  ModuleMetaData,
+  ModuleDef
+} from '@hackbox/client/modules/bundler/contracts';
 import BabelWorker from 'worker-loader!./workers/transform.worker.ts';
 import { FS } from '@hackbox/client/services/fs/fs';
 

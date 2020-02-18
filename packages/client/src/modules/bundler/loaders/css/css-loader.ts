@@ -1,4 +1,4 @@
-import { ModuleMetaData, ModuleDef } from '../..';
+import { ModuleMetaData, ModuleDef } from '../../contracts';
 import { FS } from '@hackbox/client/services/fs/fs';
 
 export async function cssLoader(

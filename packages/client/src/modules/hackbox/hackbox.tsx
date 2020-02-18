@@ -43,7 +43,6 @@ export default function Hackbox(): ReactElement {
     if (selectedFile !== undefined) {
       fs?.writeFile(selectedFile, newCode).then(() => {
         broadcaster.broadcast('FS_UPDATE', {
-          entry: './index.js',
           updatedFile: selectedFile,
           updatedFileContent: newCode
         });

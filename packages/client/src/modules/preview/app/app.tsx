@@ -1,5 +1,5 @@
 import React, { ReactElement, useEffect, useState } from 'react';
-import { run, update } from '@hackbox/client/modules/bundler';
+import { Bundler } from '@hackbox/client/modules/bundler';
 import { FS } from '@hackbox/client/services/fs/fs';
 import {
   Broadcaster,
@@ -17,16 +17,19 @@ const fs = new FS();
 export default function App(): ReactElement | null {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  let bundler: Bundler;
 
   useEffect(() => {
     // tell UI that you are ready
     broadcaster.broadcast('PREVIEW_READY', null);
     broadcaster.listen('FS_INIT', (evt) => {
       evt = evt as FileInit;
+      bundler = new Bundler(evt.entry, fs);
 
       fs.importFromJSON(evt.fsJSON);
 
-      run(fs, evt.entry)
+      bundler
+        .run()
         .then(() => {
           setError(null);
           setIsLoading(false);
@@ -37,11 +40,12 @@ export default function App(): ReactElement | null {
     });
 
     broadcaster.listen('FS_UPDATE', async (evt) => {
-      const { entry, updatedFile, updatedFileContent } = evt as FileUpdate;
+      const { updatedFile, updatedFileContent } = evt as FileUpdate;
 
       await fs.writeFile(updatedFile, updatedFileContent);
 
-      update(fs, entry, updatedFile)
+      bundler
+        .update(updatedFile)
         .then(() => {
           setError(null);
           setIsLoading(false);

@@ -1,4 +1,4 @@
-import { ModuleMetaData } from '@hackbox/client/modules/bundler';
+import { ModuleMetaData } from '@hackbox/client/modules/bundler/contracts';
 import { transform } from '@babel/standalone';
 import {
   getModuleMetaData,

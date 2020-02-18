@@ -1,10 +1,6 @@
-import { transform } from '@babel/standalone';
-import { buildModules, run, update } from '@hackbox/client/modules/bundler';
-import { babelPlugin } from './loaders/babel/workers/babel-transform';
-import { ModuleMetaData } from '@hackbox/client/modules/bundler';
-import { getModuleMetaData } from '@hackbox/client/utils/utils';
+import { Bundler } from '@hackbox/client/modules/bundler';
+import { ModuleMetaData } from '@hackbox/client/modules/bundler/contracts';
 import { FS } from '@hackbox/client/services/fs/fs';
-import { Cache } from './services/cache/cache';
 
 type BabelTransformType = (
   fileContent: string,
@@ -54,225 +50,6 @@ jest.mock(
   }
 );
 
-let someFileMetaData: ModuleMetaData;
-
-describe('Babel plugin', () => {
-  beforeEach(() => {
-    someFileMetaData = getModuleMetaData('./hello.js');
-    jest.resetAllMocks();
-  });
-
-  it('should update the default imports', () => {
-    const code = `import welcome from './welcome';
-    welcome();
-    `;
-    const expectedTransformedCode = `var welcome$ = WELCOME.default;
-welcome$();`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-
-  it('it should replace the import by variable declaration', () => {
-    const someFileMetaData = getModuleMetaData('./hello.js');
-    const code = `import counter from './counter.js'`;
-    const expectedTransformedCode = `var counter$ = COUNTER_DOT_JS.default;`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-
-  it('should update the named imports', () => {
-    const code = `import { welcome } from './welcome';
-    welcome();
-    `;
-    const expectedTransformedCode = `var welcome$ = WELCOME.welcome;
-welcome$();`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-
-  it('should update the named imports with renames', () => {
-    const code = `import { welcome as something } from './welcome';
-    something();
-    `;
-    const expectedTransformedCode = `var something$ = WELCOME.welcome;
-something$();`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-
-  it('should update fileMetadata with deps', () => {
-    const code = `import dep1 from './modules/dep1';
-      import dep2 from './modules/dep2';
-      dep1();
-      dep2();
-      `;
-
-    transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    });
-
-    expect(someFileMetaData.deps).toEqual([
-      {
-        ...getModuleMetaData('./modules/dep1'),
-        usedBy: [someFileMetaData]
-      },
-      {
-        ...getModuleMetaData('./modules/dep2'),
-        usedBy: [someFileMetaData]
-      }
-    ]);
-  });
-
-  it('should return the exports as array', () => {
-    const code = `const counter = 10, value = 2, renamedValue = 3;
-    export { value, renamedValue as otherValue };
-    export default counter;`;
-
-    transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    });
-
-    expect(someFileMetaData.exports).toEqual({
-      default: 'counter',
-      value: 'value',
-      otherValue: 'renamedValue'
-    });
-  });
-
-  it('should return the usedBy as array', () => {
-    const code = `import welcome from './welcome.js'
-    const counter = 10, value = 2, renamedValue = 3;
-    export { value, renamedValue as otherValue };
-    export default counter;`;
-
-    transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    });
-
-    expect(someFileMetaData.deps[0].usedBy).toEqual([someFileMetaData]);
-  });
-
-  it('should return the inline default export function', () => {
-    const code = `export default function someName() { console.log('ha ha') }`;
-
-    transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    });
-
-    expect(someFileMetaData.exports).toEqual({
-      default: '_defaultExportFunc'
-    });
-  });
-
-  it('should remove default exports', () => {
-    const code = `const counter = 10;
-    export default counter;`;
-    const expectedTransformedCode = `const counter = 10;`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-
-  it('should handle the anonymous default exports', () => {
-    const code = `export default function someName() { console.log('ha ha') }`;
-    const expectedTransformedCode = `var _defaultExportFunc = function someName() {
-  console.log('ha ha');
-};`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-
-  it('should remove named exports', () => {
-    const code = `const counter = 10;
-    export { counter };`;
-    const expectedTransformedCode = `const counter = 10;`;
-
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    const transformedCode = (transform(code, {
-      presets: ['es2017'],
-      plugins: [babelPlugin(someFileMetaData)]
-    }) as any).code;
-
-    expect(transformedCode).toBe(expectedTransformedCode);
-  });
-});
-
-describe('buildExecutableModules()', () => {
-  beforeEach(() => {
-    jest.resetAllMocks();
-  });
-
-  it('should create the function with required dependencies', async () => {
-    const files = {
-      './hello.js': `console.info('hello from hackbox');`
-    };
-    const fs = new FS(files);
-    const module = (await buildModules(getModuleMetaData('./hello.js'), fs))
-      .module;
-
-    console.info = jest.fn();
-    module();
-
-    expect(console.info).toHaveBeenCalledWith('hello from hackbox');
-  });
-
-  it('should return the default export', async () => {
-    const files = {
-      './hello.js': `function hello() { console.info('hello from export'); }
-      export default hello;`
-    };
-    const fs = new FS(files);
-    const module = (await buildModules(getModuleMetaData('./hello.js'), fs))
-      .module;
-
-    console.info = jest.fn();
-    const exports = module();
-    // try running the default export
-    exports.default();
-
-    expect(console.info).toHaveBeenCalledWith('hello from export');
-  });
-});
-
 describe('run()', () => {
   beforeEach(() => {
     jest.resetAllMocks();
@@ -286,9 +63,10 @@ describe('run()', () => {
       welcome();`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./hello.js', fs);
 
     console.info = jest.fn();
-    await run(fs, './hello.js');
+    await bundler.run();
 
     expect(console.info).toHaveBeenCalledWith(
       'hello from default import/export modules'
@@ -303,9 +81,10 @@ describe('run()', () => {
       './index.js': `import './index.css';`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./index.js', fs);
 
     console.info = jest.fn();
-    await run(fs, './index.js');
+    await bundler.run();
 
     const stylesheet = document.getElementById('INDEX_DOT_CSS');
 
@@ -320,9 +99,10 @@ describe('run()', () => {
       './hello.js': `console.info("Hi I'm hello.js")`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./use-hello1.js', fs);
 
     console.info = jest.fn();
-    await run(fs, './use-hello1.js');
+    await bundler.run();
 
     expect(console.info).toHaveBeenCalledWith("Hi I'm hello.js");
     expect(console.info).toHaveBeenCalledTimes(1);
@@ -336,9 +116,10 @@ describe('run()', () => {
       welcome();`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./hello.js', fs);
 
     console.info = jest.fn();
-    await run(fs, './hello.js');
+    await bundler.run();
 
     expect(console.info).toHaveBeenCalledWith(
       'hello from named import/export modules'
@@ -353,9 +134,10 @@ describe('run()', () => {
       hello();`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./hello.js', fs);
 
     console.info = jest.fn();
-    await run(fs, './hello.js');
+    await bundler.run();
 
     expect(console.info).toHaveBeenCalledWith(
       'hello from renamed import modules'
@@ -370,9 +152,10 @@ describe('run()', () => {
       hello();`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./hello.js', fs);
 
     console.info = jest.fn();
-    await run(fs, './hello.js');
+    await bundler.run();
 
     expect(console.info).toHaveBeenCalledWith(
       'hello from renamed exports modules'
@@ -394,12 +177,13 @@ describe('update()', () => {
       background: red;
     }
     `;
+    const bundler = new Bundler('./index.js', fs);
 
-    await run(fs, './index.js');
+    await bundler.run();
 
     // update the css
     await fs.writeFile('./index.css', updatedCSS);
-    await update(fs, './index.js', './index.css');
+    await bundler.update('./index.css');
     const stylesheet = document.getElementById('INDEX_DOT_CSS');
 
     expect(stylesheet?.innerText).toBe(updatedCSS);
@@ -416,8 +200,9 @@ describe('update()', () => {
       hello();`
     };
     const fs = new FS(files);
+    const bundler = new Bundler('./hello.js', fs);
 
-    await run(fs, './hello.js');
+    await bundler.run();
 
     console.info = jest.fn();
 
@@ -428,7 +213,7 @@ describe('update()', () => {
     export { welcome as something };`
     );
 
-    await update(fs, './hello.js', './welcome.js');
+    await bundler.update('./welcome.js');
 
     expect(console.info).toHaveBeenCalledWith(
       'hello from updated exports modules'

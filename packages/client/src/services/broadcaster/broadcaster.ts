@@ -1,7 +1,6 @@
 type EVENTS = 'FS_UPDATE' | 'PREVIEW_READY' | 'FS_INIT' | 'FS_SYNC';
 
 export interface FileUpdate {
-  entry: string;
   updatedFile: string;
   updatedFileContent: string;
 }
