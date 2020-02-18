@@ -1,4 +1,4 @@
-import { ModuleMetaData } from '../modules/bundler';
+import { ModuleMetaData } from '@hackbox/client/modules/bundler/contracts';
 
 export function getFileExt(fileName: string): string | undefined {
   if (fileName.includes('.')) {

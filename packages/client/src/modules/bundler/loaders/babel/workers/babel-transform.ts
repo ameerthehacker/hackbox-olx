@@ -48,7 +48,7 @@ export function babelPlugin(
           // update the dep metadata
           if (
             !depMetaData.usedBy.find(
-              (usedByModule) =>
+              (usedByModule: ModuleMetaData) =>
                 usedByModule.canocialName === fileMetaData.canocialName
             )
           ) {
