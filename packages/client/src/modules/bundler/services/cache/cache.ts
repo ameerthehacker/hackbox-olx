@@ -1,9 +1,3 @@
-import {
-  ModuleDef,
-  ModuleMetaData,
-  ExportsMetaData
-} from '@hackbox/client/modules/bundler';
-
 export class Cache<T> {
   constructor(private cache: { [key: string]: undefined | T } = {}) {}
 
