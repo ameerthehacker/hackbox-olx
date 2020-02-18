@@ -1,10 +1,10 @@
 import { transform } from '@babel/standalone';
 import { buildModules, run, update } from '@hackbox/client/modules/bundler';
-import { babelPlugin } from './workers/babel/babel';
+import { babelPlugin } from './loaders/babel/workers/babel-transform';
 import { ModuleMetaData } from '@hackbox/client/modules/bundler';
 import { getModuleMetaData } from '@hackbox/client/utils/utils';
 import { FS } from '@hackbox/client/services/fs/fs';
-import { ModuleCache } from './services/module-cache/module-cache';
+import { Cache } from './services/cache/cache';
 
 type BabelTransformType = (
   fileContent: string,
@@ -35,9 +35,9 @@ jest.mock(
           babelTransform
         }: {
           babelTransform: BabelTransformType;
-        } = require('./workers/babel/babel');
+        } = require('./loaders/babel/workers/babel-transform');
 
-        if (worker.URL.includes('babel.worker.ts')) {
+        if (worker.URL.includes('transform.worker.ts')) {
           return {
             babelTransform: (
               filecontent: string,

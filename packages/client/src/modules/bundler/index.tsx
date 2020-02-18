@@ -4,21 +4,13 @@ import {
   getCanocialName
 } from '@hackbox/client/utils/utils';
 import { FS } from '@hackbox/client/services/fs/fs';
-import { ModuleCache } from './services/module-cache/module-cache';
-import * as comlink from 'comlink';
-import BabelWorker from 'worker-loader!./workers/babel/babel.worker.ts';
+import { Cache } from './services/cache/cache';
+import { babelLoader } from './loaders/babel';
+import { cssLoader } from './loaders/css';
 
-const moduleCache = new ModuleCache<ModuleDef>();
-const moduleMetaDataCache = new ModuleCache<ModuleMetaData>();
-const exportRefCache = new ModuleCache<ExportsMetaData>();
-
-// we should not add this to the render function as it will be downloaded during every render
-const babelWorker = comlink.wrap<{
-  babelTransform(
-    fileContent: string,
-    moduleMetaData: ModuleMetaData
-  ): { transformedCode: string; hydratedModuleMetaData: ModuleMetaData };
-}>(new BabelWorker());
+const moduleDefCache = new Cache<ModuleDef>();
+const moduleMetaDataCache = new Cache<ModuleMetaData>();
+const exportedRefCache = new Cache<ExportsMetaData>();
 
 export interface ModuleDef {
   canocialName: string;
@@ -40,188 +32,6 @@ export interface ModuleMetaData {
 export interface ExportsMetaData {
   [name: string]: string;
   default: string;
-}
-
-export async function cssLoader(
-  moduleMetaData: ModuleMetaData,
-  fs: FS
-): Promise<{ hydratedModuleMetaData: ModuleMetaData; moduleDef: ModuleDef }> {
-  let fileContent = '';
-
-  if (moduleMetaData.isLocalModule) {
-    fileContent = await fs.readFile(moduleMetaData.path);
-  } else {
-    fileContent = await (
-      await fetch(`https://dev.jspm.io/${moduleMetaData.path}`)
-    ).text();
-  }
-
-  const module = (): HTMLElement => {
-    let stylesheet = document.getElementById(moduleMetaData.canocialName);
-
-    if (!stylesheet) {
-      // create the stylesheet
-      stylesheet = document.createElement('style');
-      stylesheet.id = moduleMetaData.canocialName;
-      // attach it to head tag
-      document.head.appendChild(stylesheet);
-    }
-
-    stylesheet.innerText = fileContent;
-
-    return stylesheet;
-  };
-
-  const moduleDef: ModuleDef = {
-    canocialName: moduleMetaData.canocialName,
-    deps: [],
-    module
-  };
-
-  moduleCache.set(moduleMetaData.canocialName, moduleDef);
-
-  return { hydratedModuleMetaData: moduleMetaData, moduleDef };
-}
-
-/*
-import hello from './hello.js';
-
-hello();
-
-function myHello() { console.log('my hello func') }
-
-export default myHello;
-==============================
-above code is transformed into
-==============================
-function module(HELLO) {
-  var hello$ = HELLO.default;
-
-  hello$();
-
-  function myHello() { console.log('my hello func') }
-
-  return {
-    get default() { return myHello; }
-  }
-}
-*/
-export async function babelLoader(
-  moduleMetaData: ModuleMetaData,
-  fs: FS
-): Promise<{ moduleDef: ModuleDef; hydratedModuleMetaData: ModuleMetaData }> {
-  if (moduleMetaData.isLocalModule) {
-    const fileContent = await fs.readFile(moduleMetaData.path);
-
-    /* eslint-disable prefer-const */
-    let {
-      transformedCode,
-      hydratedModuleMetaData
-    } = await babelWorker.babelTransform(fileContent, moduleMetaData);
-
-    /*
-    var hello$ = HELLO.default;
-
-    hello$();
-  
-    function myHello() { console.log('hello world'); }
-  
-    export default myHello;
-    ==============================
-    above code is transformed into
-    ==============================
-    var hello$ = HELLO.default;
-
-    hello$();
-  
-    function myHello() { console.log('hello world'); }
-    
-    return {
-      get default() { return myHello; }
-    }
-    */
-    const exports = [];
-
-    for (const exportKey in hydratedModuleMetaData.exports) {
-      const exportedRef = hydratedModuleMetaData.exports[exportKey];
-
-      if (exportedRef && exportedRef.trim().length > 0) {
-        exports.push(`get ${exportKey}() { return ${exportedRef}; }`);
-      }
-    }
-
-    const returnValue = `{${exports.join(',')}}`;
-    /*
-      return {
-        get default() { return hello; }
-      }
-    */
-    transformedCode += `;return ${returnValue};`;
-
-    /*
-    var hello$ = HELLO.default();
-
-    hello$();
-  
-    function myHello() { console.log('hello world'); }
-    
-    return {
-      get default() { return hello; }
-    }
-    ==============================
-    above code is transformed into
-    ==============================
-    function(HELLO) {
-      var hello$ = HELLO.default();
-
-      hello$();
-    
-      function myHello() { console.log('hello world'); }
-      
-      return {
-        get default() { return hello; }
-      }
-    }
-    */
-    const depArgs = hydratedModuleMetaData.deps.map((dep) => dep.canocialName);
-    const moduleDef: ModuleDef = {
-      module: new Function(...depArgs, transformedCode),
-      deps: depArgs,
-      canocialName: hydratedModuleMetaData.canocialName
-    };
-
-    return {
-      moduleDef,
-      hydratedModuleMetaData
-    };
-  } else {
-    // it is an external module like lodash
-    const externalModule = await import(
-      /* webpackIgnore: true */ `https://dev.jspm.io/${moduleMetaData.path}`
-    );
-
-    const module = (): object => {
-      if (moduleMetaData.path === 'react') {
-        window.React = externalModule.default;
-      }
-
-      return {
-        default: externalModule.default.default || externalModule.default,
-        ...externalModule.default
-      };
-    };
-
-    const moduleDef: ModuleDef = {
-      module,
-      deps: [],
-      canocialName: moduleMetaData.canocialName
-    };
-
-    return {
-      moduleDef,
-      hydratedModuleMetaData: moduleMetaData
-    };
-  }
 }
 
 export async function runLoaders(
@@ -250,6 +60,10 @@ export async function buildModules(
   moduleMetaData: ModuleMetaData,
   fs: FS
 ): Promise<ModuleDef> {
+  if (moduleMetaData.isLocalModule && !(await fs.exists(moduleMetaData.path))) {
+    throw new Error(`${moduleMetaData.path} does not exists!`);
+  }
+
   // transform that dependency and cache it
   const { hydratedModuleMetaData, moduleDef } = await runLoaders(
     moduleMetaData,
@@ -257,12 +71,12 @@ export async function buildModules(
   );
 
   moduleMetaDataCache.set(hydratedModuleMetaData.path, hydratedModuleMetaData);
-  moduleCache.set(hydratedModuleMetaData.canocialName, moduleDef);
+  moduleDefCache.set(hydratedModuleMetaData.canocialName, moduleDef);
 
   // build the executable modules of all the dependencies first
   for (const dep of hydratedModuleMetaData.deps) {
     // check if the module is already built or not
-    if (!moduleCache.get(dep.canocialName)) {
+    if (!moduleDefCache.get(dep.canocialName)) {
       await buildModules(dep, fs);
     }
   }
@@ -274,10 +88,10 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
   const depRefs: ExportsMetaData[] = [];
 
   for (const dep of moduleDef.deps) {
-    const exportedRef = exportRefCache.get(dep);
+    const exportedRef = exportedRefCache.get(dep);
 
     if (!exportedRef) {
-      const depModuleDef = moduleCache.get(dep);
+      const depModuleDef = moduleDefCache.get(dep);
 
       if (depModuleDef !== undefined) {
         const depRef = runModule(depModuleDef);
@@ -291,16 +105,16 @@ export function runModule(moduleDef: ModuleDef): ExportsMetaData {
 
   const exportedRef = moduleDef.module(...depRefs);
   // update the exportedRef cache
-  exportRefCache.set(moduleDef.canocialName, exportedRef);
+  exportedRefCache.set(moduleDef.canocialName, exportedRef);
 
   return exportedRef;
 }
 
 export async function run(fs: FS, entryFile: string): Promise<void> {
   // clear the cache
-  moduleCache.reset();
+  moduleDefCache.reset();
   moduleMetaDataCache.reset();
-  exportRefCache.reset();
+  exportedRefCache.reset();
 
   const entryFileMetaData = getModuleMetaData(entryFile);
   // build all the executable modules
@@ -311,7 +125,7 @@ export async function run(fs: FS, entryFile: string): Promise<void> {
 
 export function invalidateDependentModules(moduleMetaData: ModuleMetaData) {
   moduleMetaData.usedBy.forEach((usedByModule: ModuleMetaData) => {
-    exportRefCache.unset(moduleMetaData.canocialName);
+    exportedRefCache.unset(moduleMetaData.canocialName);
 
     invalidateDependentModules(usedByModule);
   });
@@ -332,7 +146,7 @@ export async function update(
 
     const entryModuleCanocialName = getCanocialName(entryFileName);
 
-    const entryModuleDef = moduleCache.get(entryModuleCanocialName);
+    const entryModuleDef = moduleDefCache.get(entryModuleCanocialName);
 
     // run the entry module
     if (entryModuleDef) {

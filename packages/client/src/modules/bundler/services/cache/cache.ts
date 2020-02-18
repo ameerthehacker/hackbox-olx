@@ -4,7 +4,7 @@ import {
   ExportsMetaData
 } from '@hackbox/client/modules/bundler';
 
-export class ModuleCache<T> {
+export class Cache<T> {
   constructor(private cache: { [key: string]: undefined | T } = {}) {}
 
   public set(key: string, value: T): void {

@@ -61,6 +61,10 @@ export class FS {
     }
   }
 
+  async exists(filePath: string): Promise<boolean> {
+    return await this.vol.existsSync(filePath);
+  }
+
   async mkdir(dirname: string): Promise<void> {
     await this.vol.mkdirSync(dirname);
   }
