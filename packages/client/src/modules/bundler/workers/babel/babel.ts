@@ -1,6 +1,9 @@
 import { ModuleMetaData } from '@hackbox/client/modules/bundler';
 import { transform } from '@babel/standalone';
-import { getModuleMetaData, getDirectoryName } from '../../../../utils/utils';
+import {
+  getModuleMetaData,
+  getDirectoryName
+} from '@hackbox/client/utils/utils';
 import {
   FunctionExpression,
   Identifier,
