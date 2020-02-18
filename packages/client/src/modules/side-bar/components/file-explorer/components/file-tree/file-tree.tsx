@@ -30,6 +30,7 @@ const DefaultFolderOpenSvg = lazy(() =>
 );
 const JSFileSvg = lazy(() => import('./images/js.svg'));
 const CSFileSvg = lazy(() => import('./images/css.svg'));
+const JSONFileSvg = lazy(() => import('./images/json.svg'));
 const DefaultFileSvg = lazy(() => import('./images/default-file.svg'));
 
 export function getFileIcon(
@@ -41,6 +42,9 @@ export function getFileIcon(
     }
     case 'css': {
       return CSFileSvg;
+    }
+    case 'json': {
+      return JSONFileSvg;
     }
     default:
       return DefaultFileSvg;

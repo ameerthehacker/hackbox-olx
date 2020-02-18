@@ -1,5 +1,5 @@
 import React, { ReactElement, useState } from 'react';
-import { Collapse, Box, Flex, theme, PseudoBox } from '@chakra-ui/core';
+import { Collapse, Box, Flex, theme, PseudoBox, Stack } from '@chakra-ui/core';
 
 function getStyles(isSelected: boolean): object {
   const stylesIfSelected = {
@@ -77,13 +77,15 @@ export function TreeItem({
 
   return (
     <Box
+      ml={1}
       cursor="pointer"
       p={0.5}
       onClick={(): void => (onClick ? onClick() : null)}
     >
-      <Flex>
-        {icon} <PseudoBox {...styles}>{label}</PseudoBox>
-      </Flex>
+      <Stack direction="row" spacing={1}>
+        <Box>{icon}</Box>
+        <PseudoBox {...styles}>{label}</PseudoBox>
+      </Stack>
     </Box>
   );
 }
