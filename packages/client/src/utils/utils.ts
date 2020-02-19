@@ -1,12 +1,10 @@
 import { ModuleMetaData } from '@hackbox/client/modules/bundler/contracts';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export function first(array: Array<any>): any {
+export function first<T>(array: Array<T>): T {
   return array[0];
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export function last(array: Array<any>): any {
+export function last<T>(array: Array<T>): T {
   return array[array.length - 1];
 }
 
